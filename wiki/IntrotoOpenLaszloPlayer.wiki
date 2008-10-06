@@ -15,9 +15,9 @@ The player is flash based. However, flash is NOT good at displaying HTML. In ord
 
 = Comments =
 
-* Sorry, haven't finished the comments. Most of the ActivityModelClass file is commented.
+Sorry, haven't finished the comments. Most of the ActivityModelClass file is commented.
 The other two main ones (DataAvailabilityModel and VirtualPatientData) are not commented. I'll add these as I have time to get to it. Hopefully you can start making sens of the code with out this.
 
 = Details =
 
-  * The Player runs in Firefox. Internet Explorer doesn't play well with the iframes over the flash content that are used to display the VPDText elements.
+The Player runs in Firefox. Internet Explorer doesn't play well with the iframes over the flash content that are used to display the VPDText elements.
