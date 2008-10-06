@@ -1,5 +1,4 @@
 
-
 = Introduction =
 
 A couple of notes
@@ -7,17 +6,28 @@ A couple of notes
 
 = Open Laszlo Versions = 
 
-Right now I'm using version 4.0.13 of Open Laszlo. This is not the latest stable release. However, I spent a good deal of time being up to version 4.1.1 (which is the lastest non-beta release) and there are still many kinks to work out, most notable (as always, you'll see) deal with HTML displaying. I would recommend working with 4.0.13 for now (as many developers in Open Laszlo are doing actually, if you look around on the forums) and upgrading to a newer version as things get more stable in the later version (and as we start to understand the workings of HTML in the newer versions)
+Right now I'm using version 4.0.13 of Open Laszlo. This is not the latest stable release. However, I spent a good deal of time bringin up the code to version 4.1.1 (which is the latest non-beta release) and there are still many kinks to work out, most notably (as always, you'll see) dealing with HTML displaying. I would recommend working with 4.0.13 for now (as many developers in Open Laszlo are doing actually, if you look around on the forums) and upgrading to a newer version as things get more stable in the later version (and as we start to understand the workings of HTML in the newer versions)
+
+I've uploaded the 4.1.1 version of the code, but I don't recommend using it. 
+
+Version 4.0.13 is available for download from the OL (Open Laszlo) site in the archives:
+http://www.openlaszlo.com/archive
+
+
+= Code = 
+
+Right now the code is in the download tab as zip files. Havn't set up the svc functionality or anything like that. 
+
 
 = Displaying HTML = 
 
-The player is flash based. However, flash is NOT good at displaying HTML. In order to resolve that, I've used the capabilities of OL (Open Laszlo) to create floating iframes that sit on top of the flash application and display the HTML. There iframes are pretty integrated into the flash, and most users wouldn't know the difference. However, them make thinks a little complicated on the coding side and also make cross browser compatability a pain. 
+The player is flash based. However, flash is NOT good at displaying HTML. In order to resolve that, I've used the capabilities of OL to create floating iframes that sit on top of the flash application and display the HTML. There iframes overlay the flash, and most users wouldn't know the difference. However, them make thinks a little complicated on the coding side and also make cross browser compatability a pain. 
 
+= Browsers =
+
+The Player runs in Firefox. Internet Explorer doesn't play well with the iframes over the flash content that are used to display the VPDText elements. This is a pretty major limitation. There may be way to overcome it, but so far my efforts have not succeed.  Haven't tried it in chrom or Safari.
+ 
 = Comments =
 
 Sorry, haven't finished the comments. Most of the ActivityModelClass file is commented.
 The other two main ones (DataAvailabilityModel and VirtualPatientData) are not commented. I'll add these as I have time to get to it. Hopefully you can start making sens of the code with out this.
-
-= Details =
-
-The Player runs in Firefox. Internet Explorer doesn't play well with the iframes over the flash content that are used to display the VPDText elements.
