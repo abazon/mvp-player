@@ -1,0 +1,207 @@
+<!--
+	Author: Ben Azan
+	Licence: Attribution-Noncommercial-Share Alike 3.0
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+-->
+
+<library>
+	<class name="DAMNode" extends="view">
+		<attribute name="DAMNodeID" type="string"></attribute>
+		<updatinglayout id="DAMNodeLayout" axis="y" spacing="0" />
+		<DAMNodeItem />
+		<handler name="ondata">
+			//var newDAMNode = new DAMNodeItem(this, {id:"DNI"});
+			var DAMNodeIDFinder = new LzDatapointer(this, {});
+			DAMNodeIDFinder.setFromPointer(this.datapath.dupePointer());
+			this.DAMNodeID = DAMNodeIDFinder.getNodeAttribute("id");
+			if(TriggeredDAMNodeList.hasDAMNode(this.DAMNodeID)){
+				Debug.write("DO NOT DISPLAY THIS DAM NODE" + this.DAMNodeID);
+				//NEED TO ADD CODE THAT WILL ONLY DISPLAY RETURNED PEICES OF DATA IN THE CHART HERE, AND
+				//NOT DISPLAY THE NODE NORMALLY.
+			}
+		</handler>	
+	</class>
+	
+	<class name="updatinglayout" extends="simplelayout">
+		<event name="layoutUpdate"/>
+		<method name="update" args="ignore">
+			super.update();
+			layoutUpdate.sendEvent();
+		</method>
+	</class>
+	
+	<class name="commentWindow" extends="window" allowdrag="false">
+		<simplelayout axis="y" spacing="0"/>
+		<handler name="onvisible">
+			if(this.visible == false)
+				this.destroy();
+		</handler>
+	</class>
+	
+	<class name="DAMNodeItem" extends="view" datapath="DAMNodeItem">
+		<simplelayout axis="y" spacing="0" />
+		<VPDElementFinder datapath="ItemPath/text()"></VPDElementFinder>
+		<handler name="ondata">
+			Debug.write("DAMNodeItem: ----" + this.datapath.getNodeAttribute("display"));
+			if(this.datapath.getNodeAttribute("display") == "immediately" || typeof(this.datapath.getNodeAttribute("display")) == 'undefined'){
+				Debug.write("You are creating DAM NOTE VIEWS!");
+				this.createDAMNodeIDViews();
+			}
+		</handler>
+		<method name="createDAMNodeIDViews">
+			//Method needs to me renamed to reflect that it also creates the ItemComment view
+			var DAMNodePathPointer = new LzDatapointer(this, {name: "DAMNodePathDatapointer"});
+			DAMNodePathPointer.setFromPointer(this.datapath.dupePointer());
+			DAMNodePathPointer.selectChild();
+			do{
+				if(DAMNodePathPointer.getNodeName() == "ItemComment"){
+					var ItemCommentPointer = new LzDatapointer(this, {name: "ItemCommentDataPointer"});
+					ItemCommentPointer.setXPath("DataAvailabilityModel:" + DAMNodePathPointer.getNodeText());
+					Debug.write("This is what you are pointing to: " + ItemCommentPointer.getNodeName());
+					ItemCommentPointer.selectChild();
+					Debug.write("This is what you are pointing to: " + ItemCommentPointer.getNodeName());
+					
+					
+						
+							Debug.write("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+							var newWrapperView = new LzView(this, {});
+							var newCommentWindow = new lz.commentWindow(newWrapperView, {title:"Comment for Item Above" , x: "60", closeable: "true", resizable:"true", width:"850", height:"250"});
+							var newItemComment = new lz.DAMNodeItem(newCommentWindow, {bgcolor:"0xffff00"});
+							newItemComment.setAttribute('datapath',"DataAvailabilityModel:" + DAMNodePathPointer.getNodeText() + "/DAMNodeItem");
+							
+						
+					
+					
+				}
+				
+				if(DAMNodePathPointer.getNodeName() == "DAMNodePath"){
+					//var newDAMNode = new DAMNode(this, {x: "60", bgcolor:"0xff00ff"});
+					//newDAMNode.setDatapath("DataAvailabilityModel:" + DAMNodePathPointer.getNodeText());
+					var DAMNodeItemPointer = new LzDatapointer(this, {name: "DAMNodeItemDataPointer"});
+					DAMNodeItemPointer.setXPath("DataAvailabilityModel:" + DAMNodePathPointer.getNodeText());
+					Debug.write("This is what you are pointing to: " + DAMNodeItemPointer.getNodeName());
+					DAMNodeItemPointer.selectChild();
+					Debug.write("This is what you are pointing to: " + DAMNodeItemPointer.getNodeName());
+					
+					
+						
+							Debug.write("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+							var newDAMNodeItem = new lz.DAMNodeItem(this, {x: "60", bgcolor:"0xff00ff"});
+							newDAMNodeItem.setAttribute('datapath',"DataAvailabilityModel:" + DAMNodePathPointer.getNodeText() + "/DAMNodeItem");
+						
+					
+					
+				}
+			}	
+			while (DAMNodePathPointer.selectNext())
+		</method>
+	</class>
+	
+	<class name="VPDElementFinder" extends="view">
+		<attribute name="valueDisplayAttrib" type="string"></attribute>
+		<handler name="ondata">
+			//Find out if this is element is returned data.
+			var str = new String(this.datapath.getNodeText());
+			//if(ChartPending.isPending(str) == false){
+				
+				var AttribPointer = new LzDatapointer(this, {});
+				AttribPointer.setFromPointer(this.datapath.dupePointer());
+				AttribPointer.selectParent();
+				var DisplayValue = AttribPointer.getNodeAttribute("display");
+				var DisplayValueInitial = DisplayValue;
+				
+				var foundInPrevTrigger = false; 
+				
+				for (var i = 0; i &lt; TriggeredVPDElementList.subnodes.length; i++)
+   				{	
+   					//Debug.write("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY:" + this.datapath.getNodeText());
+					//Debug.write("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ:" + TriggeredVPDElementList.subnodes[i].getAttribute("nodeXpath"));
+
+   					if(str.indexOf(TriggeredVPDElementList.subnodes[i]['nodeXpath']) != -1){
+   						Debug.write("XXXXXXXXXXXXXXXXXXXXXx: " + TriggeredVPDElementList.subnodes[i]['nodeXpath']);
+   						ChartNew.addElement(TriggeredVPDElementList.subnodes[i]['nodeXpath']);
+   						DisplayValue = "immediately";
+   						ChartPending.deletePending(str);
+   						foundInPrevTrigger = true;
+   					}
+   				}
+				
+   				if(foundInPrevTrigger == false &amp;&amp; DisplayValueInitial == "ifrequested"){
+   					AttribPointer.destroy();
+					DisplayValue = "";
+					return;
+   				}
+   			
+				Debug.write("-----DISPLAY FLAG: " + DisplayValue);
+				
+				if(str.indexOf('VirtualPatientData') == -1){
+						var newMediaResource = new lz.MediaResource(this.parent, {});
+						newMediaResource.setAttribute('datapath',"imsmanifest:" + this.datapath.getNodeText());
+						Debug.write("MEDIA RESOURCE: " + this.datapath.getNodeText());
+				}
+				else{
+					//This is a VirtualPatientDataElement
+					if(str.indexOf('InterviewItem') != -1){
+						//You found InterviewItem
+						var newInterviewItem = new lz.InterviewItem(this.parent, {displayFlag: DisplayValue} );
+						newInterviewItem.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+						//Debug.write("You are in InterviewItem FInder" + this.datapath.getNodeText());
+					}
+					else{
+						if(str.indexOf('VPDText') != -1){
+							//You found VPDText
+							var newWrapperView = new LzView(this.parent, {});						
+							newVPDText = new lz.VPDText(newWrapperView, {width: "750", displayFlag: DisplayValue, datapath: "VirtualPatientData:" + this.datapath.getNodeText() + "/div" } );
+							//newVPDText.setDatapath("VirtualPatientData:" + this.datapath.getNodeText());
+							//newVPDText.loadxhtml();
+							Debug.write("You are in VPDText FInder" + this.datapath.getNodeText());
+						}
+						else{
+							if(str.indexOf('Medication') != -1){
+							var newMedication = new lz.Medication(this.parent, {} );
+							newMedication.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+							}
+							else{
+								if(str.indexOf('PatientDemographics') != -1){
+								var newPatientDemographics = new lz.PatientDemographics(this.parent, {} );
+								newPatientDemographics.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+								}
+								else{
+									if(str.indexOf('PhysicalExam') != -1){
+										var newPhysicalExam = new lz.PhysicalExam(this.parent, {displayFlag: DisplayValue} );
+										newPhysicalExam.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+										//Debug.write("You are in PhysicalExam FInder" + this.datapath.getNodeText());
+									}
+									else{
+										if(str.indexOf('DiagnosticTest') != -1){
+										var newDiagnosticTest = new lz.DiagnosticTest(this.parent, {displayFlag: DisplayValue} );
+										newDiagnosticTest.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+										//Debug.write("You are in DiagnosticTest FInder" + this.datapath.getNodeText());
+										}
+										else{
+											if(str.indexOf('Diagnosis') != -1){
+											var newDiagnosis = new lz.Diagnosis(this.parent, {displayFlag: DisplayValue} );
+											newDiagnosis.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+											//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											else{
+											if(str.indexOf('Intervention') != -1){
+												var newIntervention = new lz.Intervention(this.parent, {displayFlag: DisplayValue} );
+												newIntervention.setAttribute('datapath',"VirtualPatientData:" + this.datapath.getNodeText());
+												//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					
+				}
+				AttribPointer.destroy();
+				DisplayValue = "";
+		</handler>
+	</class>
+	
+</library>

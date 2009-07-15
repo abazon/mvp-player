@@ -1,0 +1,79 @@
+<!--
+	Author: Ben Azan
+	Licence: Attribution-Noncommercial-Share Alike 3.0
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+-->
+
+<library>
+	
+	<class name="MediaResource" extends="view" >
+		<handler name="ondata">
+			var strdatapath = new String(this.datapath.getNodeAttribute("href"));	
+			if(strdatapath.indexOf('.flv') == -1 &amp;&amp; strdatapath.indexOf('.mp4') == -1 &amp;&amp; strdatapath.indexOf('.mov') == -1 &amp;&amp; strdatapath.indexOf('.mp3') == -1 &amp;&amp; strdatapath.indexOf('.wav') == -1 ){
+				var newMediaResource = new LzView(this, {});
+				newMediaResource.setSource(strdatapath);
+				Debug.write("MEDIA RESOURCE222: " + strdatapath);
+			}
+			else{
+				if(strdatapath.indexOf('.flv') != -1){
+					var wrapperView = new LzView(this, {clip:'true', width:'500', height:'500'});
+					var loadString = new String();
+					loadString = lz.Browser.getLoadURL();
+					var slashLocation = loadString.lastIndexOf('/');
+					loadString = loadString.substring(0, slashLocation + 1);
+					loadString = loadString + strdatapath;
+					var newMediaResource = new lz.videoplayer(wrapperView, {url: loadString, type: 'http', autoplay:'true', width:'400', height:'300'});
+					Debug.write("MEDIA RESOURCE3333: " + strdatapath);
+				}
+				else{
+					if(strdatapath.indexOf('.mp4') != -1 || strdatapath.indexOf('.mov') != -1 || strdatapath.indexOf('.mp3') == -1 || strdatapath.indexOf('.wav') == -1){
+						var loadString = new String();
+						loadString = lz.Browser.getLoadURL();
+						var slashLocation = loadString.lastIndexOf('/');
+						loadString = loadString.substring(0, slashLocation + 1);
+						loadString = loadString + strdatapath;
+						var embedString = new String();
+						if(strdatapath.indexOf('.mp4') != -1 || strdatapath.indexOf('.mov') != -1){
+						embedString= '&lt;object type="video/quicktime" data="'+ loadString + '" width="500" height="400"&gt;' +
+								'&lt;param name="pluginurl" value="http://www.apple.com/quicktime/download/" /&gt;' +
+								'&lt;param name="controller" value="true" /&gt;' + 
+								'&lt;param name="autoplay" value="false" /&gt;' +
+								'&lt;param name="autostart" value="0" /&gt;' + 
+								'alt : &lt;a href="' + loadString + '"&gt;media/video.mp4&lt;/a&gt;' +
+								'&lt;/object&gt;';
+								
+								var newWrapperView = new LzView(this.parent, {});						
+								var newVPDText = new lz.VPDTextMedia(newWrapperView, {width: "650", height:"450"} );
+								newVPDText.setAttribute('theHTML', embedString);
+						}
+						else{
+							embedString= '&lt;object type="video/quicktime" data="'+ loadString + '" width="600" height="50"&gt;' +
+								'&lt;param name="pluginurl" value="http://www.apple.com/quicktime/download/" /&gt;' +
+								'&lt;param name="controller" value="true" /&gt;' + 
+								'&lt;param name="autoplay" value="false" /&gt;' +
+								'&lt;param name="autostart" value="0" /&gt;' + 
+								'alt : &lt;a href="' + loadString + '"&gt;media/video.mp4&lt;/a&gt;' +
+								'&lt;/object&gt;';
+								
+							var newWrapperView = new LzView(this.parent, {});						
+							var newVPDText = new lz.VPDTextMedia(newWrapperView, {width: "650", height:"100"} );
+							newVPDText.setAttribute('theHTML', embedString);
+						}
+														
+					
+						
+					Debug.write("LOAD URL: " + lz.Browser.getLoadURL());
+					Debug.write("Embed String: " + embedString);
+					}
+					else{
+						
+					}
+				}
+			}
+		</handler>
+	</class>
+	
+	<class name="VideoMediaResource" extends="videoplayer">
+	</class>
+	
+</library>

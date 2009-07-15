@@ -1,0 +1,30 @@
+<!--
+	Author: Ben Azan
+	Licence: Attribution-Noncommercial-Share Alike 3.0
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+-->
+
+<canvas height="100%" width="100%" debug="false">
+	
+	<resource name="rightarrow" src="playermedia/rightarrow.jpg"></resource>
+	<resource name="plussign" src="playermedia/plussign.jpg"></resource>
+	<resource name="minussign" src="playermedia/minussign.jpg"></resource>
+	<dataset type="http" request="true" name="VirtualPatientData" src="virtualpatientdata.xml" trimwhitespace="true"/>
+	<dataset type="http" request="true" name="DataAvailabilityModel" src="dataavailabilitymodel.xml" trimwhitespace="true"/>
+	<dataset type="http" request="true" name="ActivityModel" src="activitymodel.xml" trimwhitespace="true"/>
+	<dataset type="http" request="true" name="imsmanifest" src="imsmanifest.xml"/>
+	
+	<include href="virtualpatientdataclasses.lzx" />
+	<include href="dataavailabilitymodelclasses.lzx" />
+	<include href="activitymodelclasses.lzx" />
+	<include href="mediaresourceclasses.lzx" />
+	
+	<view clip="true" height="95%" width="95%">
+	<ActivityModelClass id="MainActivityModelView"></ActivityModelClass> 
+	<![CDATA[<VPDText name="testVPDText" datapath="VirtualPatientData:/VirtualPatientData/VPDText[@id = 'v1']" />
+	<text>Hello World.</text>]]>
+	<hscrollbar/>
+	<vscrollbar/>
+	</view>
+	
+</canvas>

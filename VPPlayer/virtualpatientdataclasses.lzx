@@ -1,0 +1,798 @@
+<!--
+	Author: Ben Azan
+	Licence: Attribution-Noncommercial-Share Alike 3.0
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+-->
+<library>
+	<class name="InterviewItem" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string" />
+		
+		<view name="QuestionView">
+			<view name="PlusIcon" resource="plussign" />
+			<text name="Question" datapath="Question/text()">
+			</text>
+			<handler name="onclick">
+					this.setAttribute('clickable', false);
+					if(this.parent.displayFlag == "ontrigger"){
+						this.parent.parent.createDAMNodeIDViews();
+						this.PlusIcon.setAttribute('resource', "minussign");
+						var newIcon = new LzView (this.parent.ResponseView, {});
+						newIcon.setAttribute('resource', "rightarrow");
+						var newResponse = new LzText( this.parent.ResponseView, {name: "Response"} );
+						newResponse.setAttribute('datapath',"Response/text()");
+						//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+						var newDatapointer = new LzDatapointer(this.parent.ResponseView, {name: "newDatapointer"});
+						var newMedia = new LzView(this.parent.MediaView, {name: "Media"});
+						newMedia.setAttribute('datapath',"Media/Location/text()");
+						newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+						if(newDatapointer.isValid()){	
+							var strdatapath = new String(newMedia.datapath.getNodeText());
+							newMedia.setSource(strdatapath);
+							//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+						}
+						
+					//var newInterviewItem = new InterviewItem(ChartCurrent, {displayFlag:"immediately"} );
+					//newInterviewItem.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+					
+					}
+					else{
+						if(this.parent.displayFlag == "delayed"){
+							this.PlusIcon.setAttribute('resource', "minussign");
+							var newIcon = new LzView (this.parent.ResponseView, {});
+							newIcon.setAttribute('resource', "rightarrow");
+							var newResponse = new LzText( this.parent.ResponseView, {name: "Response", fontstyle:"italic", text:"The answer to this question will be returned in a later node..."});
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath: this.parent.Path });
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+							var newInterviewItem = new lz.InterviewItem(ChartPending, {displayFlag:"N/A"} );
+							newInterviewItem.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+						}
+					}
+					
+					//Add element to triggered list
+					var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+					
+				</handler>
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		<view name="ResponseView" xoffset="-10">
+			<simplelayout axis="x" spacing="0"/>
+		</view>	
+		<view name="MediaView" xoffset="-10"> 
+			
+		</view>
+			
+		<simplelayout axis="y" spacing="1"/>
+		
+		<handler name="ondata">
+			//Sets the IterviewItemID on first Data.
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/InterviewItem[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			//Debug.write("INTERVIEWITEM DISPLAYFLAG: " + this.displayFlag);
+			if(this.displayFlag == "immediately" || typeof(this.displayFlag) == 'undefined'){
+				//Debug.write("INTERVIEWITEM immediately: ");
+				this.QuestionView.PlusIcon.setAttribute('resource', "minussign");
+				this.QuestionView.setAttribute('clickable', false);
+				var newIcon = new LzView (this.ResponseView, {});
+				newIcon.setAttribute('resource', "rightarrow");
+				var newResponse = new LzText( this.ResponseView, {name: "Response"} );
+				newResponse.setAttribute('datapath',"Response/text()");
+				var newDatapointer = new LzDatapointer(this.ResponseView, {name: "newDatapointer"});
+				var newMedia = new LzView(this.MediaView, {name: "Media"});
+				newMedia.setAttribute('datapath',"Media/Location/text()");
+				newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+				//Debug.write("immediately: " + newDatapointer.isValid());
+				if(newDatapointer.isValid()){	
+					var strdatapath = new String(newMedia.datapath.getNodeText());
+					newMedia.setSource(strdatapath);
+					//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+				}
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					//Debug.write("INTERVIEWITEM ontrigger: ");
+					//this.Question.setAttribute('clickable', true);
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//Debug.write("INTERVIEWITEM delayed: ");
+						//PUT CODE IN CASE OF DELAYED FLAG HERE FOR INTERVIEW ITEM!!!!!!
+						
+					}
+				}
+			}
+		</handler>
+		
+		
+	</class>
+	
+	<class name="LocationOnBody" extends="view" >
+		<text text=", Location: "/>
+		<text name="BodyPart" datapath="BodyPart/text()"></text>
+		<text name="ProximalOrDistal" datapath="ProximalOrDistal/text()"></text>
+		<text name="RightOrLeft" datapath="RightOrLeft/text()"></text>
+		<text name="FrontOrBack" datapath="FrontOrBack/text()"></text>
+		<text name="InferiorOrSuperior" datapath="InferiorOrSuperior/text()"></text>
+		<simplelayout axis="x" spacing="0"/>
+		<handler name="oninit">
+			//Debug.write("IN LOCATION ON BODY");
+			
+		</handler>
+	</class>
+	
+	<class name="PhysicalExam" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string" />
+		<view name="ExamView">
+			<view name="PlusIcon" resource="plussign" />
+			<text name="ExamNameActionView" datapath="ExamName/text()"/>
+			<text name="Commas" text=", "/>
+			<text name="Action" datapath="Action/text()" />
+			<LocationOnBody datapath="LocationOnBody"></LocationOnBody>
+			<handler name="onclick">
+				this.setAttribute('clickable', false);
+				if(this.parent.displayFlag == "ontrigger"){
+					this.PlusIcon.setAttribute('resource', "minussign");
+					var newIcon = new LzView (this.parent.ResultsView, {});
+					newIcon.setAttribute('resource', "rightarrow");
+					//var newFindingText = new LzText( this.parent.ResultsView, {name: "FindingText", text: "Finding: "} );
+					var newFinding = new LzText( this.parent.ResultsView, {name: "Finding"} );
+					newFinding.setAttribute('datapath',"Finding/text()");
+					var newDescription = new LzText( this.parent.ResultsView, {name: "Description"} );
+					newDescription.setAttribute('datapath',"Description/text()");
+					//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+					var newDatapointer = new LzDatapointer(this.parent.ResultsView, {name: "newDatapointer"});
+					var newMedia = new LzView(this.parent.MediaView, {name: "Media"});
+					newMedia.setAttribute('datapath',"Media/Location/text()");
+					newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+					if(newDatapointer.isValid()){	
+						var strdatapath = new String(newMedia.datapath.getNodeText());
+						newMedia.setSource(strdatapath);
+						//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+					}
+					
+					//var newPhysicalExam = new PhysicalExam(ChartCurrent, {displayFlag: "immediately"} );
+					//newPhysicalExam.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+									
+				}
+					else{
+						if(this.parent.displayFlag == "delayed"){
+							this.PlusIcon.setAttribute('resource', "minussign");
+							var newIcon = new LzView (this.parent.ResultsView, {});
+							newIcon.setAttribute('resource', "rightarrow");		
+							var newFinding = new LzText( this.parent.ResultsView, {name: "Finding", fontstyle:"italic", text:"The results of this physical exam will be returned in a later node..."} );
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath:this.parent.Path});
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+						
+							var newPhysicalExam = new lz.PhysicalExam(ChartPending, {displayFlag: "N/A"} );
+							newPhysicalExam.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+						}
+					}
+					
+					//Add element to triggered list
+					var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+					
+			</handler>
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		
+		<view name="ResultsView" xoffset="-10">
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		
+		<view name="MediaView" xoffset="-10"> 
+		</view>
+		
+		<simplelayout axis="y" spacing="1"/>
+		
+		<handler name="ondata">
+			this.ExamView.setAttribute('clickable', false); //not sure why we need this, other wise it's clickable automatically, don't know why???
+			//Sets the Path on first Data.
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/PhysicalExam[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			if(this.displayFlag == "immediately" || typeof(this.displayFlag) == 'undefined'){ 
+				this.ExamView.PlusIcon.setAttribute('resource', "minussign");
+				//Debug.write("Immediately Pysical exam: " );
+				var newIcon = new LzView (this.ResultsView, {});
+				newIcon.setAttribute('resource', "rightarrow");
+				var newFinding = new LzText( this.ResultsView, {name: "Finding"} );
+				newFinding.setAttribute('datapath',"Finding/text()");
+				var newDescription = new LzText( this.ResultsView, {name: "Description"} );
+				newDescription.setAttribute('datapath',"Description/text()");
+				//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+				var newDatapointer = new LzDatapointer(this.ResultsView, {name: "newDatapointer"});
+				var newMedia = new LzView(this.MediaView, {name: "Media"});
+				newMedia.setAttribute('datapath',"Media/Location/text()");
+				newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+				if(newDatapointer.isValid()){	
+					var strdatapath = new String(newMedia.datapath.getNodeText());
+					newMedia.setSource(strdatapath);
+					//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+				}
+				//Debug.write("You are in immediately");
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					this.ExamView.setAttribute('clickable', true);
+					//Debug.write("Ontrigger Pysical exam: " );
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//PUT CODE IN CASE OF DELAYED FLAG HERE FOR PHYSICAL EXAM ITEM!!!!!!
+						this.ExamView.setAttribute('clickable', true);
+					}
+				}
+			}
+		</handler>
+	</class>
+	
+	<class name="DiagnosticTest" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string"/>
+		<view name="DiagnosticView">
+			<view name="PlusIcon" resource="plussign" />
+			<text name="TestName" datapath="TestName/text()" />
+			<![CDATA[<text name="UnitsText" text=", Units:"/>
+			<text name="Unit" datapath="Unit/text()"/> ]]>
+			<handler name="onclick">
+				this.setAttribute('clickable', false);
+				if(this.parent.displayFlag == "ontrigger"){
+					this.PlusIcon.setAttribute('resource', "minussign");
+					var newResultText = new LzText( this.parent.ResultsView, {name: "ResultText", text: "Results: "} );
+					var newResult = new LzText( this.parent.ResultsView, {name: "Result"} );
+					newResult.setAttribute('datapath',"Result/text()");
+					var newNormalText = new LzText( this.parent.ResultsView, {name: "NormalText", text: "Normal: "} );
+					var newNormal = new LzText( this.parent.ResultsView, {name: "Normal"} );
+					newNormal.setAttribute('datapath',"Normal/text()");
+					var newUnitText = new LzText( this.parent.ResultsView, {name: "UnitsText", text: "Units: "} );
+					var newUnit = new LzText( this.parent.ResultsView, {name: "Units"} );
+					newUnit.setAttribute('datapath',"Unit/text()");
+					//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+					var newDatapointer = new LzDatapointer(this.parent.ResultsView, {name: "newDatapointer"});
+					var newMedia = new LzView(this.parent.MediaView, {name: "Media"});
+					newMedia.setAttribute('datapath',"Media/Location/text()");
+					newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+					if(newDatapointer.isValid()){	
+						var strdatapath = new String(newMedia.datapath.getNodeText());
+						newMedia.setSource(strdatapath);
+						//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+					}
+					
+					//var newDiagnosticTest = new DiagnosticTest(ChartCurrent, {displayFlag:"immediately"});
+					//newDiagnosticTest.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+									
+				}
+					else{
+						if(this.parent.displayFlag == "delayed"){
+							this.PlusIcon.setAttribute('resource', "minussign");
+							var newIcon = new LzView (this.parent.ResultsView, {});
+							newIcon.setAttribute('resource', "rightarrow");		
+							var newResult = new LzText( this.parent.ResultsView, {name: "Result", fontstyle:"italic", text:"The results of this diagnositc test will be returned in a later node..."} );
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath:this.parent.Path});
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+						
+							var newDiagnosticTest = new lz.DiagnosticTest(ChartPending, {displayFlag:"N/A"});
+							newDiagnosticTest.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+					
+						
+						}
+					}
+					
+					//Add element to triggered list
+					var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+					
+			</handler>
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		<view name="ResultsView" xoffset="-10">
+			<simplelayout axis="x" spacing="0"/>
+		</view>	
+		<view name="MediaView" xoffset="-10">
+		</view>
+		<simplelayout axis="y" spacing="1"/>
+		<handler name="ondata">
+			this.DiagnosticView.setAttribute('clickable', false); //not sure why we need this, other wise it's clickable automatically, don't know why???
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/DiagnosticTest[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			if(this.displayFlag == "immediately"){ 
+				//Debug.write("Immediately Pysical exam: " );
+				this.DiagnosticView.PlusIcon.setAttribute('resource', "minussign");
+				var newIcon = new LzView (this.ResultsView, {});
+				newIcon.setAttribute('resource', "rightarrow");
+				var newResultText = new LzText( this.ResultsView, {name: "ResultText", text: "Results: "} );
+				var newResult = new LzText( this.ResultsView, {name: "Result"} );
+				newResult.setAttribute('datapath',"Result/text()");
+				var newNormalText = new LzText( this.ResultsView, {name: "NormalText", text: "Normal: "} );
+				var newNormal = new LzText( this.ResultsView, {name: "Normal"} );
+				newNormal.setAttribute('datapath',"Normal/text()");
+				var newUnitText = new LzText( this.ResultsView, {name: "UnitsText", text: "Units: "} );
+				var newUnit = new LzText( this.ResultsView, {name: "Units"} );
+				newUnit.setAttribute('datapath',"Unit/text()");
+				//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+				var newDatapointer = new LzDatapointer(this.ResultsView, {name: "newDatapointer"});
+				var newMedia = new LzView(this.MediaView, {name: "Media"});
+				newMedia.setAttribute('datapath',"Media/Location/text()");
+				newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+				if(newDatapointer.isValid()){	
+					var strdatapath = new String(newMedia.datapath.getNodeText());
+					newMedia.setSource(strdatapath);
+					//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+				}
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					this.DiagnosticView.setAttribute('clickable', true);
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//PUT CODE IN CASE OF DELAYED FLAG HERE FOR PHYSICAL EXAM ITEM!!!!!!
+						this.DiagnosticView.setAttribute('clickable', true);
+					}
+				}
+			}
+		</handler>
+	</class>
+		
+	<class name="VPDText" extends="window" height="150" allowdrag="false" resizable="true" inset_top="5">
+	        <html name="main" width="100%" height="${classroot.height - this.y - 27}" heightoffset="-35" widthoffset="-19" xoffset="7" yoffset="20" history="true">
+	        </html>
+	     
+	       <handler name="ondata">
+	        	
+	        	var width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "ony");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onx");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onheight");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onwidth");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(PatientChart, "onheight");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(PatientChart, "onvisible");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(ActivityNavMenu, "onwidth");
+  				width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(ActivityNavMenu, "onvisible");
+	  			
+	  			width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(DAMNodeLayout, "layoutUpdate"); 
+			
+	  			lz.Browser.loadJS("document.getElementById('" + main.iframeid + "').contentWindow.document.body.style.height='auto'");
+	  			
+	  			var thexhtml = this.datapath.xpathQuery();	
+				Debug.write("VPDText: " + this.datapath.xpathQuery());
+				lz.Browser.loadJS("document.getElementById('" + main.iframeid + "').contentWindow.document.body.innerHTML = '" + thexhtml + "';");
+
+	       		//lz.Browser.loadJS("alert(document.getElementById('" + main.iframeid + "').contentWindow.document.body.offsetHeight)");
+	       
+	       		//if( typeof this.del == "undefined" ) { 
+                //	this.del = new LzDelegate( this, "loadHTML" );
+                //	lz.Timer.addTimer( this.del, 2050 );
+            	//}
+	       		
+				//lz.Browser.callJS("findheight", function(res) {Debug.write("$$$$Result$$$: "+res);}, main.iframeid )
+				
+				if( typeof this.del == "undefined" ) { 
+                	this.del = new LzDelegate( this, "updateMyPos" );
+                	lz.Timer.addTimer( this.del, 100 );
+				}
+	        </handler>
+	       
+	        <method name="loadHTML" args="ignore">
+	        	lz.Browser.callJS("findheight", this.updateHeight, main.iframeid);
+	        	//Debug.write("this.x: " + this.x + " this.y: " + this.y);
+	        	//Debug.write("THE HEIGHT: " + this);
+	        </method>
+	        
+	        <method name="updateHeight" args="divHeight">
+	        	//Unless you are doing height adjutement from div height, this method is NOT being called
+	        	Debug.write("$$$$Result$$$: "+ divHeight);
+	        	//Debug.inspect(newVPDText);
+	        	MainActivityModelView.setAttribute('bgcolor', "red");
+	        	if( divHeight &lt; 70){
+	        		Debug.write("Less than 80");
+	        		newVPDText.setAttribute('height', 80);
+	        	}
+	        	else{
+	        		if( divHeight &lt; 300){
+	        			Debug.write("Less than 300");
+	        			newVPDText.setAttribute('height', divHeight);
+	        		}
+	        		else{
+	        			Debug.write("More than 300");
+	        			newVPDText.setAttribute('height', 300);
+	        		}
+	        	}
+            
+	        	//MainActivityModelView.setAttribute('height', MainActivityModelView.getAttribute('height')+ 5);
+	        </method>
+	        <method name="destroy">
+	        	lz.Browser.loadJS("document.body.removeChild(document.getElementById('" + main.iframeid + "'));");
+	        	super.destroy();
+	        </method>
+	        <method name="updateMyPos" args="ignore">
+	        	//Debug.write("Updating Post" + this);
+	        	this.main.__updatepos();
+	        </method> 
+	</class>
+	
+	<class name="VPDTextMedia" extends="window" height="150" allowdrag="false" resizable="true" inset_top="5">
+		<attribute name="theHTML" type="string" value="TEST"> </attribute>
+	        <html name="main" width="100%" height="${classroot.height - this.y - 27}" heightoffset="-35" widthoffset="-19" xoffset="7" yoffset="20" history="true">
+	        </html>
+	     
+	       <handler name="ontheHTML">
+	        	
+	        	var width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "ony");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onx");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onheight");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(MainActivityModelView, "onwidth");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(PatientChart, "onheight");
+  				width_del = new LzDelegate(this, "updateMyPos");
+  				width_del.register(PatientChart, "onvisible");
+  				
+  				width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(ActivityNavMenu, "onwidth");
+  				width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(ActivityNavMenu, "onvisible");
+	  			
+	  			width_del = new LzDelegate(this, "updateMyPos");
+	  			width_del.register(DAMNodeLayout, "layoutUpdate"); 
+			
+	  			lz.Browser.loadJS("document.getElementById('" + main.iframeid + "').contentWindow.document.body.style.height='auto'");
+	  				
+				//Debug.write("VPDText: " + this.datapath.xpathQuery());
+				lz.Browser.loadJS("document.getElementById('" + main.iframeid + "').contentWindow.document.body.innerHTML = '" + this.theHTML+ "';");
+			
+				if( typeof this.del == "undefined" ) { 
+                	this.del = new LzDelegate( this, "updateMyPos" );
+                	lz.Timer.addTimer( this.del, 100 );
+				}
+	        </handler>
+	  
+	        <method name="destroy">
+	        	lz.Browser.loadJS("document.body.removeChild(document.getElementById('" + main.iframeid + "'));");
+	        	super.destroy();
+	        </method>
+	        <method name="updateMyPos" args="ignore">
+	        	this.main.__updatepos();
+	        </method> 
+	</class>
+	
+	
+	<class name="Medication" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string"/>
+		<text fontstyle="bold">Medication:</text>
+		<attribute name="MedicationName" value="$path{'MedicationName/text()'}"/>
+		<attribute name="Dose" value="$path{'Dose/text()'}"/>
+		<attribute name="Route" value="$path{'Route/text()'}"/>
+		<attribute name="Frequency" value="$path{'Frequency/text()'}"/>
+		<text name="MedicationText">
+			<handler name="onclick">
+			this.setAttribute('clickable', false);
+			if(this.parent.displayFlag == "ontrigger"){ 
+				
+				this.parent.parent.createDAMNodeIDViews();
+				
+				//var newMedication = new Medication(ChartCurrent, {} );
+				//newMedication.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+						
+			}
+			else{
+				if(this.parent.displayFlag == "delayed"){
+							var newResult = new LzText( this, {fontstyle:"italic", text:"You have triggered this Medication,comments will be returned in a later node."} );
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath:this.parent.Path});
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+				
+							//NEED TO PUT SOMETHING HERE FOR PENDING/DELAYED MEDICATION AND HOW THIS IS HANDLED!!! 
+						
+				}
+			}
+			//Add element to triggered list
+			var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+			</handler>
+		</text>
+		<simplelayout axis="y" spacing="0"/>
+		<handler name="ondata">
+			this.MedicationText.setAttribute('text', this.MedicationName + ", " + this.Dose + ", " + this.Route + ", " + this.Frequency);
+			//this.MedicationText.setAttribute('clickable', false); //not sure why we need this, other wise it's clickable automatically, don't know why???
+			this.MedicationText.setAttribute('clickable', false);
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/Medication[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			if(this.displayFlag == "immediately"){ 
+				//Debug.write("Immediately VDPText exam: " );
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					this.MedicationText.setAttribute('clickable', true);
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//PUT CODE IN CASE OF DELAYED FLAG HERE FOR PHYSICAL EXAM ITEM!!!!!!
+						this.MedicationText.setAttribute('clickable', true);
+					}
+				}
+			}
+		</handler>
+	</class>
+	
+	<class name="CoreDemographics" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="CoreDemographicsID" type="string"/>
+		<attribute name="PatientID" value="$path{'PatientID/text()'}"/>
+		<attribute name="Name" value="$path{'Name/text()'}"/>
+		<attribute name="Age" value="$path{'Age/text()'}"/>
+		<attribute name="Sex" value="$path{'Sex/text()'}"/>
+		<attribute name="Race" value="$path{'Race/text()'}"/>
+		<text name="PatientIDText" />
+		<text name="NameText" />
+		<text name="AgeText" />
+		<text name="SexText" />
+		<text name="RaceText" />
+		<simplelayout axis="y" spacing="0"/>
+		<handler name="ondata">
+			this.PatientIDText.setAttribute('text', "ID: " + this.PatientID);
+			this.NameText.setAttribute('text', "Name: " + this.Name);
+			this.AgeText.setAttribute('text', "Age: " + this.Age);
+			this.SexText.setAttribute('text', "Sex: " + this.Sex);
+			this.RaceText.setAttribute('text', "Race: " + this.Race);
+		</handler>
+	</class>
+	
+	<class name="DemographicCharacteristic" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="DemographicCharacteristicID" type="string"/>
+		<attribute name="Title" value="$path{'Title/text()'}"/>
+		<attribute name="Description" value="$path{'Description/text()'}"/>
+		<text name="DemoText" />
+		<simplelayout axis="y" spacing="0"/>
+		<handler name="ondata">
+			this.DemoText.setAttribute('text', this.Title + ": " + this.Description);
+		</handler>
+	</class>
+	
+	<class name="PatientDemographics" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="PatientDemographicsID" type="string"/>
+		<CoreDemographics datapath="CoreDemographics" />
+		<DemographicCharacteristic datapath="DemographicCharacteristic" />
+		<simplelayout axis="y" spacing="10"/>
+	</class>
+	
+	<class name="Diagnosis" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string"/>
+		<view name="DiagnosisView">
+			<view name="PlusIcon" resource="plussign" />
+			<text name="Diagnosis" datapath="DiagnosisName/text()" />
+			<handler name="onclick">
+				this.setAttribute('clickable', false);
+				if(this.parent.displayFlag == "ontrigger"){ 
+					this.parent.parent.createDAMNodeIDViews();
+					this.PlusIcon.setAttribute('resource', "minussign");
+					var newIcon = new LzView (this.parent.LikelihoodView, {});
+					newIcon.setAttribute('resource', "rightarrow");
+					var newLikelihoodText = new LzText( this.parent.LikelihoodView, {name: "LikelihoodViewText", text: "Likelihood: "} );
+					var newLikelihood = new LzText( this.parent.LikelihoodView, {name: "Likelihood"} );
+					newLikelihood.setAttribute('datapath',"Likelihood/text()");
+					//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+					var newDatapointer = new LzDatapointer(this.parent.LikelihoodView, {name: "newDatapointer"});
+					var newMedia = new LzView(this.parent.MediaView, {name: "Media"});
+					newMedia.setAttribute('datapath',"Media/Location/text()");
+					newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+					if(newDatapointer.isValid()){	
+						var strdatapath = new String(newMedia.datapath.getNodeText());
+						newMedia.setSource(strdatapath);
+						//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+					}
+					
+					//var newDiagnosis = new Diagnosis(ChartCurrent, {displayFlag:"immediately"} );
+					//newDiagnosis.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+										
+				}
+				else{
+						if(this.parent.displayFlag == "delayed"){
+							this.PlusIcon.setAttribute('resource', "minussign");
+							var newIcon = new LzView (this.parent.LikelihoodView, {});
+							newIcon.setAttribute('resource', "rightarrow");		
+							var newResult = new LzText( this.parent.LikelihoodView, {name: "likelyhood", fontstyle:"italic", text:"The likelyhood of this Diganosis will be returned in a later node."} );
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath:this.parent.Path});
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+						
+						
+							var newDiagnosis = new lz.Diagnosis(ChartPending, {displayFlag:"N/A"} );
+							newDiagnosis.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+					
+						}
+					}
+					
+				//Add element to triggered list
+				var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+					
+			</handler>
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		<view name="LikelihoodView" xoffset="-10">
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+			
+		<view name="MediaView" xoffset="-10">
+		</view>
+		<simplelayout axis="y" spacing="0"/>
+		<handler name="ondata">
+			this.DiagnosisView.setAttribute('clickable', false); //not sure why we need this, other wise it's clickable automatically, don't know why???
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/Diagnosis[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			if(this.displayFlag == "immediately"){ 
+				//Debug.write("Immediately Diagnosis exam: " );
+				this.DiagnosisView.PlusIcon.setAttribute('resource', "minussign");
+				var newIcon = new LzView (this.LikelihoodView, {});
+				newIcon.setAttribute('resource', "rightarrow");
+				var newLikelihoodText = new LzText( this.LikelihoodView, {name: "LikelihoodViewText", text: "Likelihood: "} );
+				var newLikelihood = new LzText( this.LikelihoodView, {name: "Likelihood"} );
+				newLikelihood.setAttribute('datapath',"Likelihood/text()");
+				//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+				var newDatapointer = new LzDatapointer(this.LikelihoodView, {name: "newDatapointer"});
+				var newMedia = new LzView(this.MediaView, {name: "Media"});
+				newMedia.setAttribute('datapath',"Media/Location/text()");
+				newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+				if(newDatapointer.isValid()){	
+					var strdatapath = new String(newMedia.datapath.getNodeText());
+					newMedia.setSource(strdatapath);
+					//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+				}
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					this.DiagnosisView.setAttribute('clickable', true);
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//PUT CODE IN CASE OF DELAYED FLAG HERE FOR PHYSICAL EXAM ITEM!!!!!!
+						this.DiagnosisView.setAttribute('clickable', true);
+					}
+				}
+			}
+		</handler>
+		
+	</class>
+	
+	<class name="Intervention" extends="view">
+		<attribute name="displayFlag" type="string"/>
+		<attribute name="Path" type="string"/>
+		<view name="InterventionView">
+			<view name="PlusIcon" resource="plussign" />
+			<text name="InterventionName" datapath="InterventionName/text()" />
+			<Medication datapath="Medication"></Medication>
+			<handler name="onclick">
+				this.setAttribute('clickable', false);
+				if(this.parent.displayFlag == "ontrigger"){
+					this.PlusIcon.setAttribute('resource', "minussign");
+					var newIcon = new LzView (this.parent.ResultsView, {});
+					newIcon.setAttribute('resource', "rightarrow");
+					var newResultText = new LzText( this.parent.ResultsView, {name: "AppropriatenessResultText", text: "Appropriateness: "} );
+					var newResult = new LzText( this.parent.ResultsView, {name: "Appropriateness"} );
+					newResult.setAttribute('datapath',"Appropriateness/text()");
+					var newNormalText = new LzText( this.parent.ResultsView, {name: "ResultsText", text: "Results: "} );
+					var newNormal = new LzText( this.parent.ResultsView, {name: "Results"} );
+					newNormal.setAttribute('datapath',"Results/text()");
+					//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+					var newDatapointer = new LzDatapointer(this.parent.ResultsView, {name: "newDatapointer"});
+					var newMedia = new LzView(this.parent.MediaView, {name: "Media"});
+					newMedia.setAttribute('datapath',"Media/Location/text()");
+					newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+					if(newDatapointer.isValid()){	
+						var strdatapath = new String(newMedia.datapath.getNodeText());
+						newMedia.setSource(strdatapath);
+						//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+					}
+				
+				//var newIntervention = new Intervention(ChartCurrent, {displayFlag:"immediately"} );
+				//newIntervention.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+					
+				}
+				else{
+						if(this.parent.displayFlag == "delayed"){
+							this.PlusIcon.setAttribute('resource', "minussign");
+							var newIcon = new LzView (this.parent.ResultsView, {});
+							newIcon.setAttribute('resource', "rightarrow");		
+							var newResult = new LzText( this.parent.ResultsView, {name: "ResultsView", fontstyle:"italic", text:"The results of this intervention will be returned in a later node."} );
+							//Add VPD element to Delayed VPDElements.
+							var newDelayedVPDElement = new lz.DelayedVPDElement(DelayedVPDElementList, {nodeXpath:this.parent.Path});
+							//Add element to Triggered list
+							var newTriggeredDAMNode	= new lz.TriggeredDAMNode(TriggeredDAMNodeList, {DAMnodeID:mainDataView.DAMNodeID})
+						
+						var newIntervention = new lz.Intervention(ChartPending, {displayFlag:"N/A"} );
+						newIntervention.setAttribute('datapath',"VirtualPatientData:" + this.parent.Path);
+				
+						}
+					}
+					
+				//Add element to triggered list
+				var newTriggeredVPDElement = new lz.TriggeredVPDElement(TriggeredVPDElementList, {nodeXpath:this.parent.Path});
+					
+			</handler>
+			<simplelayout axis="x" spacing="0"/>
+		</view>
+		<view name="ResultsView" xoffset="-10">
+			<simplelayout axis="x" spacing="0"/>
+		</view>	
+		<view name="MediaView" xoffset="-10">
+		</view>
+		<simplelayout axis="y" spacing="1"/>
+		<handler name="ondata">
+			this.InterventionView.setAttribute('clickable', false); //not sure why we need this, other wise it's clickable automatically, don't know why???
+			var myPointer = new LzDatapointer(this, {}); 
+			myPointer.setFromPointer(this.datapath.dupePointer());
+			this.Path = "/VirtualPatientData/Intervention[@id = '" + myPointer.getNodeAttribute("id") + "']";
+			if(this.displayFlag == "immediately"){ 
+				//Debug.write("Immediately Intervention exam: " );
+				this.InterventionView.PlusIcon.setAttribute('resource', "minussign");
+				var newIcon = new LzView (this.ResultsView, {});
+				newIcon.setAttribute('resource', "rightarrow");
+				var newResultText = new LzText( this.ResultsView, {name: "AppropriatenessText", text: "Appropriateness: "} );
+				var newResult = new LzText( this.ResultsView, {name: "Appropriateness"} );
+				newResult.setAttribute('datapath',"Appropriateness/text()");
+				var newNormalText = new LzText( this.ResultsView, {name: "ResultsText", text: "Results: "} );
+				var newNormal = new LzText( this.ResultsView, {name: "Results"} );
+				newNormal.setAttribute('datapath',"Results/text()");
+				//Debug.write("HERE YOU ARE" + newResponse.datapath.getNodeText());
+				var newDatapointer = new LzDatapointer(this.ResultsView, {name: "newDatapointer"});
+				var newMedia = new LzView(this.MediaView, {name: "Media"});
+				newMedia.setAttribute('datapath',"Media/Location/text()");
+				newDatapointer.setFromPointer(newMedia.datapath.dupePointer());
+				if(newDatapointer.isValid()){	
+					var strdatapath = new String(newMedia.datapath.getNodeText());
+					newMedia.setSource(strdatapath);
+					//Debug.write("MEdia TextNode: " + newMedia.datapath.isValid());
+				}
+			}
+			else{
+				if(this.displayFlag == "ontrigger"){
+					this.InterventionView.setAttribute('clickable', true);
+					
+				}
+				else{
+					if(this.displayFlag == "delayed"){
+						//PUT CODE IN CASE OF DELAYED FLAG HERE INTERVENTION EXAM ITEM!!!!!!
+						this.InterventionView.setAttribute('clickable', true);
+					}
+				}
+			}
+		</handler>
+	</class>
+	
+</library>

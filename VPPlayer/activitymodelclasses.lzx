@@ -1,0 +1,1186 @@
+<!--
+	Author: Ben Azan
+	Licence: Attribution-Noncommercial-Share Alike 3.0
+	http://creativecommons.org/licenses/by-nc-sa/3.0/
+-->
+<library>
+	<class name="Chart" extends="window" title="Patient Chart" allowdrag="false" closeable="true" resizable="true" width="650" height="250">
+		<attribute name="hasNewTrigger" value="false" type="boolean"/>
+		<attribute name="hasNewDelayed" value="false" type="boolean"/>
+		 <tabs bordersize="0">
+              <tabpane text="Returned">
+              	<attribute name="currentCount" type="number" value="0"></attribute>
+              	<view id="ChartNew">
+              		<simplelayout axis="y" spacing="0"/>
+              		<method name="addElement" args="path">
+              		var str = new String(path);
+              			
+              		if(str.indexOf('InterviewItem') != -1){
+						//You found InterviewItem
+						var newInterviewItem = new lz.InterviewItem(this, {displayFlag: "immediately"} );
+						newInterviewItem.setAttribute('datapath',"VirtualPatientData:" + path);
+						//Debug.write("You are in InterviewItem FInder" + this.datapath.getNodeText());
+					}
+					else{
+						if(str.indexOf('VPDText') != -1){
+							//You found VPDText						
+							var newVPDText = new lz.VPDText(this, {displayFlag: "immediately"} );
+							newVPDText.setAttribute('datapath',"VirtualPatientData:" + path);
+							//newVPDText.loadxhtml();
+							//Debug.write("You are in VPDText FInder" + this.datapath.getNodeText());
+						}
+						else{
+							if(str.indexOf('Medication') != -1){
+							var newMedication = new lz.Medication(this, {displayFlag: "immediately"} );
+							newMedication.setAttribute('datapath',"VirtualPatientData:" + path);
+							}
+							else{
+								if(str.indexOf('PatientDemographics') != -1){
+								var newPatientDemographics = new lz.PatientDemographics(this, {displayFlag: "immediately"} );
+								newPatientDemographics.setAttribute('datapath',"VirtualPatientData:" + path);
+								}
+								else{
+									if(str.indexOf('PhysicalExam') != -1){
+										var newPhysicalExam = new lz.PhysicalExam(this, {displayFlag: "immediately"} );
+										newPhysicalExam.setAttribute('datapath',"VirtualPatientData:" + path);
+										//Debug.write("You are in PhysicalExam FInder" + this.datapath.getNodeText());
+									}
+									else{
+										if(str.indexOf('DiagnosticTest') != -1){
+										var newDiagnosticTest = new lz.DiagnosticTest(this, {displayFlag: "immediately"} );
+										newDiagnosticTest.setAttribute('datapath',"VirtualPatientData:" + path);
+										//Debug.write("You are in DiagnosticTest FInder" + this.datapath.getNodeText());
+										}
+										else{
+											if(str.indexOf('Diagnosis') != -1){
+											var newDiagnosis = new lz.Diagnosis(this, {displayFlag: "immediately"} );
+											newDiagnosis.setAttribute('datapath',"VirtualPatientData:" + path);
+											//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											else{
+											if(str.indexOf('Intervention') != -1){
+												var newIntervention = new lz.Intervention(this, {displayFlag: "immediately"} );
+												newIntervention.setAttribute('datapath',"VirtualPatientData:" + path);
+												//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					//OR
+					//this.parent.parent.parent.findAndAddVPD(path, "this");
+              		</method>
+              		<method name="clearChartNew">
+              				this.parent.currentCount = 0;
+              				this.parent.setAttribute("text", "Returned");
+              				var numberOfSubNodes = this.subnodes.length;
+              				for (var i = 1; i &lt; numberOfSubNodes; i++)
+	   						{	
+	   							
+	   							var namevar = this.subnodes[i]['displayFlag'];
+	   							if(namevar = "immediately")
+	   							{
+	   								//This is always index 0, b/c each time destroys a node
+	   								//next node now becomes new 0 indexed subnode.
+	   								Debug.write("You are deleting something in ChartNew");
+									this.subnodes[1].destroy();
+									
+								}
+	   						}
+              		</method>
+              		<handler name="onaddsubview">
+              			this.parent.setAttribute('selected', true);
+              			this.parent.parent.parent.setAttribute('visible',true);
+              			this.parent.currentCount++;
+						this.parent.setAttribute("text", "Returned (" + this.parent.currentCount + ")");
+              		</handler>
+              		
+              	</view>
+              	
+              </tabpane>
+              <tabpane text="Pending">
+              <attribute name="currentCount" type="number" value="0"></attribute>
+              	<view id="ChartPending" > 
+              		<simplelayout axis="y" spacing="0"/>
+              	<handler name="onaddsubview">
+              		this.parent.parent.parent.hasNewDelayed = true;
+              		this.parent.currentCount++;
+					this.parent.setAttribute("text", "Pending (" + this.parent.currentCount + ")");
+              	</handler>
+              	<method name="isPending" args="VPDString">
+              	//MIGHT NEED TO TAKE A LOOK AT THIS TO SEE IF IT SUFFERS FROM THE SAME ISSUES
+              	//THEN NEEDED FIXING WHEN DELETING THE SUBNODES FROM CHARTALERTS.
+              	var found = false;	
+              	for (var i = 0; i &lt; this.subnodes.length; i++)
+   				{	
+   					if(VPDString == this.subnodes[i]['Path']){
+						Debug.write("$$$$THIS ELEMENT NEEDS TO BE RETURNED: $$$" + this.subnodes[i]['Path']);   						
+   						ChartNew.addElement(this.subnodes[i]['Path']);
+   						this.subnodes[i].destroy();
+   						i--; //because it's going to detroy the subnode and so needs to go one back in order to not miss one.
+   						found = true;
+   						return found;
+   					}
+   				}
+              	
+   				Debug.write("FOUND??????" + found);  
+   				return found;
+              	</method>
+              	<method name="deletePending" args="VPDString">
+              		//MIGHT NEED TO TAKE A LOOK AT THIS TO SEE IF IT SUFFERS FROM THE SAME ISSUES
+              		//THEN NEEDED FIXING WHEN DELETING THE SUBNODES FROM CHARTALERTS.
+              		for (var i = 0; i &lt; this.subnodes.length; i++)
+   					{	
+   						if(VPDString == this.subnodes[i]['Path']){
+							Debug.write("$$$$THIS ELEMENT IS BEING DELETE FROM PENDING: $$$" + this.subnodes[i]['Path']);   						
+	   						this.parent.currentCount--;
+	   						if(this.parent.currentCount != 0){
+	   							this.parent.setAttribute("text", "Pending (" + this.parent.currentCount + ")");
+	   						}
+	   						else{
+	   							this.parent.setAttribute("text", "Pending");
+	   						}
+	   						this.subnodes[i].destroy();
+	   					}
+	   				}
+              	</method>
+              	</view>
+              </tabpane>
+              <tabpane name="AlertsTab" text="Alerts">
+              	<attribute name="currentCount" type="number" value="0"></attribute>
+              		<view id="ChartAlerts">
+              			<simplelayout name="LayOut" axis="y" spacing="0"/>
+              			<method name="addNewAlert" args="AlertText">
+              				Debug.write("ALERT TESTTTTTTTTTTTT:" + AlertText);
+              				var newAlert = new LzText(this, {name: "AText", text: AlertText});
+              				//Doesn't work to set color of text
+              				//var newFont = new font(newAlert, {});
+              			</method>
+              			<handler name="onaddsubview">
+              				this.parent.setAttribute('selected', true);
+              				//this.parent.parent.parent.setAttribute('visible',true);
+              				this.parent.parent.parent.setAttribute('visible', true);
+							this.parent.currentCount++;
+							this.parent.setAttribute("text", "Alerts (" + this.parent.currentCount + ")");
+              			</handler>
+              			<method name="clearAlerts">
+              				this.parent.currentCount = 0;
+              				this.parent.setAttribute("text", "Alerts");
+              				var numberOfSubNodes = this.subnodes.length;
+              				for (var i = 1; i &lt; numberOfSubNodes; i++)
+	   						{	
+	   							
+	   							var namevar = this.subnodes[i]['name'];
+	   							if(namevar = "AText")
+	   							{
+	   								//This is always index 0, b/c each time destroys a node
+	   								//next node now becomes new 0 indexed subnode.
+									this.subnodes[1].destroy();
+								}
+	   						}
+              			</method>
+              		</view>
+              		<handler name="onclick">
+              			this.parent.setAttribute("text", "Alerts");
+              			this.currentAlerts = 0;
+              		</handler>
+              </tabpane>
+              
+          </tabs>
+          <scrollbar/>
+		  <hscrollbar/>
+		  
+		  <method name="findAndAddVPD" args="path, location">
+		
+		var str = new String(path);
+              			
+              		if(str.indexOf('InterviewItem') != -1){
+						//You found InterviewItem
+						var newInterviewItem = new lz.InterviewItem(eval(location), {displayFlag: "immediately"} );
+						newInterviewItem.setAttribute('datapath',"VirtualPatientData:" + path);
+						//Debug.write("You are in InterviewItem FInder" + this.datapath.getNodeText());
+					}
+					else{
+						if(str.indexOf('VPDText') != -1){
+							//You found VPDText						
+							var newVPDText = new lz.VPDText(eval(location), {displayFlag: "immediately"} );
+							newVPDText.setAttribute('datapath',"VirtualPatientData:" + path);
+							//newVPDText.loadxhtml();
+							//Debug.write("You are in VPDText FInder" + this.datapath.getNodeText());
+						}
+						else{
+							if(str.indexOf('Medication') != -1){
+							var newMedication = new lz.Medication(eval(location), {} );
+							newMedication.setAttribute('datapath',"VirtualPatientData:" + path);
+							}
+							else{
+								if(str.indexOf('PatientDemographics') != -1){
+								var newPatientDemographics = new lz.PatientDemographics(eval(location), {} );
+								newPatientDemographics.setAttribute('datapath',"VirtualPatientData:" + path);
+								}
+								else{
+									if(str.indexOf('PhysicalExam') != -1){
+										var newPhysicalExam = new lz.PhysicalExam(eval(location), {displayFlag: "immediately"} );
+										newPhysicalExam.setAttribute('datapath',"VirtualPatientData:" + path);
+										//Debug.write("You are in PhysicalExam FInder" + this.datapath.getNodeText());
+									}
+									else{
+										if(str.indexOf('DiagnosticTest') != -1){
+										var newDiagnosticTest = new lz.DiagnosticTest(eval(location), {displayFlag: "immediately"} );
+										newDiagnosticTest.setAttribute('datapath',"VirtualPatientData:" + path);
+										//Debug.write("You are in DiagnosticTest FInder" + this.datapath.getNodeText());
+										}
+										else{
+											if(str.indexOf('Diagnosis') != -1){
+											var newDiagnosis = new lz.Diagnosis(eval(location), {displayFlag: "immediately"} );
+											newDiagnosis.setAttribute('datapath',"VirtualPatientData:" + path);
+											//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											else{
+											if(str.indexOf('Intervention') != -1){
+												var newIntervention = new lz.Intervention(eval(location), {displayFlag: "immediately"} );
+												newIntervention.setAttribute('datapath',"VirtualPatientData:" + path);
+												//Debug.write("You are in DiagnosisTest FInder" + this.datapath.getNodeText());
+											}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+	</method>
+    <handler name="onvisible">
+    	if(this['visible'] == false){
+    		ChartButton.setAttribute("ChartToggle", "0");
+    	}
+    </handler>      
+	</class>
+	<class name="VisitedActivityNodes" extends="node">
+		
+	</class>
+	<class name="TriggeredVPDElements" extends="node">
+		
+	</class>
+	<class name="DelayedVPDElements" extends="node">
+		
+	</class>
+	
+	<class name="CounterList" extends="node"/>
+	<class name="TriggeredDAMNodes" extends="node">
+		<method name="hasDAMNode" args="DAMNodeID">
+			var found = false;	
+			for (var i = 0; i &lt; this.subnodes.length; i++)
+   				{	
+   					if(DAMNodeID == this.subnodes[i]['DAMnodeID']){
+						Debug.write("$$$$CALLED DAM NODE THAT HAD ELEMENTS DELAYED IN IT: $$$" + this.subnodes[i]['DAMnodeID']);   						
+   						//NEED TO WRITE CODE TO RETURN THE ONE ELEMENT HERE.
+   						found = true;	
+   					}
+   				}
+		</method>
+	</class>
+	
+	<class name="VisitedActiviteNode" extends="node">
+		<attribute name="nodeXpath" type="string"></attribute>
+	</class>
+	<class name="TriggeredVPDElement" extends="node">
+		<attribute name="nodeXpath" type="string"></attribute>
+	</class>
+	<class name="DelayedVPDElement" extends="node">
+		<attribute name="nodeXpath" type="string"></attribute>
+	</class>
+	<class name="TriggeredDAMNode" extends="node">
+		<attribute name="DAMnodeID" type="string"></attribute>
+	</class>
+	<class name="CurrentVPDTextList" extends="node">
+		<attribute name="nodeXpath" type="string"></attribute>
+	</class>
+	
+	
+	<class name="ActivityNode" extends="view">
+		<attribute name="CurrentNodeTitle" type="string" value="$path{'@label'}" />
+		<view name="buttonview">
+				<button id="NavButton">
+					Nav
+					<attribute name="NavToggle" type="number" value="0"></attribute>
+					<handler name="onclick">
+		    			if(this.NavToggle == 0){
+		    				this.NavToggle = 1;
+		    				ActivityNavMenu.open();
+		    			}
+		    			else{
+		    				this.NavToggle = 0;
+		    				ActivityNavMenu.close();
+		    			}
+		    		</handler>
+
+				</button>
+				<button id="ChartButton">
+					Chart
+					<attribute name="ChartToggle" type="number" value="0"></attribute>
+		    		<handler name="onclick">
+		    			if(this.ChartToggle == 0){
+		    				this.ChartToggle = 1;
+		    				PatientChart.open();
+		    			}
+		    			else{
+		    				this.ChartToggle = 0;
+		    				PatientChart.close();
+		    			}
+		    		</handler>
+				</button>
+				<simplelayout axis="x" spacing="2"/>
+		</view>
+		<view>
+			<Chart id="PatientChart">
+				<handler name="oninit">
+					this.close();
+				</handler>
+			</Chart>
+		</view>
+		<CounterList id="CounterList"/>
+		<VisitedActivityNodes id="VisitedActivityNodeList"/>
+		<TriggeredVPDElements id="TriggeredVPDElementList"/>
+		<DelayedVPDElements id="DelayedVPDElementList"/>
+		<TriggeredDAMNodes id="TriggeredDAMNodeList"/>
+		<text datapath="@label" fontsize="20"></text>
+		<view datapath="Content/text()">
+			<handler name="ondata">
+				//sets off the creation of DAMNode
+				//Debug.write("SUB NODE: " + this.searchSubnodes("mainde").getUID());
+				//Debug.write("SUB NODE: " + this.getUID());
+				if(typeof(mainDataView) != 'undefined')
+					mainDataView.destroy();
+				if(typeof(TimerViewLocal) != 'undefined')	
+					TimerViewLocal.destroy();
+				//Debug.write("MEDIA RESOURCE: " + this.datapath.getNodeText());
+				mainDataView = new lz.DAMNode(this, {});
+				mainDataView.setAttribute('datapath',"DataAvailabilityModel:" + this.datapath.getNodeText());
+				
+				//Debug.write("You are CREATING A DAMNODE"); 
+				//this.parent.createLinks();
+			</handler> 
+		</view>
+		<method name="createLinks" args="probValue">
+			//sets off the creatoin of links 
+			Debug.write("SET OFF!!!!");
+			var nodeID = new LzDatapointer(this, {name: "newDatapointer"}); 
+			nodeID.setFromPointer(this.datapath.dupePointer());
+			var currentActivityNodeID = new String(nodeID.getNodeAttribute("id"));
+			
+			if(typeof(mainLinksView) != 'undefined')
+				mainLinksView.destroy();
+			Debug.write("create LINKS: " + currentActivityNodeID);
+			Debug.write("PROB IN LINKS CLASS: " + probValue);
+			
+			mainLinksView = new lz.Links( this, {ActivityNodeDatapointer : currentActivityNodeID, probability: probValue});
+			nodeID.destroy();
+		</method>
+		<handler name="ondata">
+			var probValue = "0ff";
+			var redirected = false;
+			var nodeID = new LzDatapointer(this, {name: "newDatapointer2"}); 
+			nodeID.setFromPointer(this.datapath.dupePointer())
+			//sets off the update of counters
+			nodeID.selectChild();
+			nodeID.selectNext();
+			//Debug.write("LOOKING FOR RULES!!!!!!" + nodeID.getNodeName());
+			do{
+				if(nodeID.getNodeName() == "Rules"){
+					//Debug.write("YOU FOUND RULES ELEMENT!!!!!!");
+					nodeID.selectChild();
+					do{
+						if(nodeID.getNodeName() == "CounterActionRule"){
+							
+								nodeID.selectChild();
+								//nodeID.selectNext();
+								var counterOperator = nodeID.getNodeText();
+								nodeID.selectNext();
+								var counterRuleValue = nodeID.getNodeText();
+								nodeID.selectNext();
+								//var CounterID = nodeID.getNodeText();
+								var CounterXPathVar = new String(nodeID.getNodeText());
+								
+								var CounterIDVar = CounterXPathVar.split("'")
+								//var CounterIDExp = eval(CounterIDVar[1]);
+								Debug.write("CounterIDVar:!!!!!!" + CounterIDVar[1]);
+								Debug.write("CounterIDVar:!!!!!!" + theMainView.subviews);
+								
+								
+								for(i = 0; i &lt; theMainView.CountersView.subnodes.length; i++){
+									if(theMainView.CountersView.subnodes[i]['counterID'] == CounterIDVar[1]){
+										theMainView.CountersView.subnodes[i].UpdateCounterValue(counterOperator,counterRuleValue);
+										Debug.write("YOU ARE IN COUNTER!!: " + theMainView.CountersView.subnodes[i]['counterID']);
+									}
+									Debug.write("YOU ARE looking in node!!: " + theMainView.CountersView.subnodes[i]['counterID']);
+								}
+								//redirected = CounterIDExp.UpdateCounterValue(counterOperator,counterRuleValue);
+								
+								nodeID.selectParent();
+							
+						}
+						if(nodeID.getNodeName() == "Probability"){
+							probValue = nodeID.getNodeText();
+							//Debug.write("PROB VALUE: " + probValue);
+						}
+						if(nodeID.getNodeName() == "ConditionalRule"){
+							//Handle ConditionalRule
+							nodeID.selectChild();
+							if(nodeID.selectChild()){
+								var nodeIDCopy = nodeID.dupePointer();
+								var conditionalResults = evaluateConditonal(nodeIDCopy);
+								Debug.write("CONDITIONALL!!!!!: " + conditionalResults);
+								if(!conditionalResults){
+									nodeID.selectParent();
+									Debug.write("PARENT########: " + nodeID.getNodeName());
+									while(nodeID.selectNext()){
+										Debug.write("CHILD########: " + nodeID.getNodeName());
+										if(nodeID.getNodeName() == "RuleRedirect"){
+											ActivityNodeView.setAttribute('datapath',"ActivityModel:" + nodeID.getNodeText());
+										}
+										if(nodeID.getNodeName() == "RuleMessage"){
+											ChartAlerts.addNewAlert(nodeID.getNodeText());
+										}
+									}
+									
+								}
+							}
+						}
+						if(nodeID.getNodeName() == "NavigateGlobal"){
+							//Handle NavigateGlobal 
+							//DO NOTHING. THIS IS HANDLED AT STARTUP BY THE NAVVIEW
+						}
+					}while (nodeID.selectNext())
+					nodeID.selectParent();
+				}
+				if(nodeID.getNodeName() == "Services"){
+					nodeID.selectChild();
+					if(nodeID.getNodeName() == "Timer"){
+						//Debug.write("ABOUT TO CREATE A LOCAL TIMER!!" + this.datapath);
+						TimerViewLocal = new lz.NodeTimer(this, {name: "TimerViewLocal", x:"0", TimerString:"Local Timer: "});
+						//Debug.write("This datapath!@!@!@!@!@!:" + this.datapath.toString());
+						TimerViewLocal.setAttribute('datapath',"Services/Timer");
+					}
+					nodeID.selectParent();
+				}
+			}while(nodeID.selectNext())
+			nodeID.selectParent();
+			
+			//Debug.write("WAS THE LEARNER REDIRECTED??????" + redirected);
+			//Add Nodes that have been visited to an sorte of array.
+				if(redirected != true){
+					//add this node to the list of activity nodes visited.
+					var XpathGetter = new LzDatapointer(this, {}); 
+					XpathGetter.setFromPointer(this.datapath.dupePointer());
+					var newVisitedActivityNode = new lz.VisitedActiviteNode(VisitedActivityNodeList,{nodeXpath:"/ActivityModel/ActivityNodes/NodeSection/ActivityNode[@id='" + XpathGetter.getNodeAttribute("id") + "']"});
+					
+				}
+								
+				for (var i = 0; i &lt; VisitedActivityNodeList.subnodes.length; i++)
+   				{	
+					Debug.write("NODES THAT HAVE BEEN VISITED: " + VisitedActivityNodeList.subnodes[i]['nodeXpath']);
+   				}
+   				
+   				for (var i = 0; i &lt; TriggeredVPDElementList.subnodes.length; i++)
+   				{	
+					Debug.write("VPD DATA TRIGGERED: " + TriggeredVPDElementList.subnodes[i]['nodeXpath']);
+   				}
+   				for (var i = 0; i &lt; DelayedVPDElementList.subnodes.length; i++)
+   				{	
+					Debug.write("DELAYED VPD ELEMENTS: " + DelayedVPDElementList.subnodes[i]['nodeXpath']);
+   				}
+   				for (var i = 0; i &lt; TriggeredDAMNodeList.subnodes.length; i++)
+   				{	
+					Debug.write("TRIGGERED DAM NODES: " + TriggeredDAMNodeList.subnodes[i]['DAMnodeID']);
+   				}
+			
+			nodeID.destroy();
+			
+			//There might be a problem with calling the creation of links from this spot.
+			//Has to do with either end of a timer or redirecting du to some condition not being met
+			//might need to be called from inside the content/text() like it was before above.
+			this.createLinks(probValue);
+		</handler>
+		<method name="evaluateConditonal" args="datapointer">
+			Debug.write("YOU ARE EVALUATING CONDITONAL" + datapointer.getNodeName());
+			
+			if(datapointer.getNodeName() == "Operand"){
+				Debug.write("YOU ARE IN OPERAND: " + datapointer.getNodeText());
+				if(isPrevTriggeredOrVisited(datapointer.getNodeText())){
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			if(datapointer.getNodeName() == "And"){
+				Debug.write("YOU ARE IN AND");
+				datapointer.selectChild();
+				do{
+					if(evaluateConditonal(datapointer) == false){
+						datapointer.selectParent();
+						return false;
+					}
+				}while(datapointer.selectNext());
+				return true;
+			}
+			if(datapointer.getNodeName() == "Or"){
+				Debug.write("YOU ARE IN OR");
+				datapointer.selectChild();
+				do{
+					if(evaluateConditonal(datapointer) == true){
+						datapointer.selectParent();
+						return true;
+					}
+				}while(datapointer.selectNext());
+				return false;
+			}
+			if(datapointer.getNodeName() == "Nand"){
+				Debug.write("YOU ARE IN NAND");
+				datapointer.selectChild();
+				do{
+					if(evaluateConditonal(datapointer) == false){
+						datapointer.selectParent();
+						return true;
+					}
+				}while(datapointer.selectNext());
+				return false;
+			}
+			if(datapointer.getNodeName() == "Nor"){
+				Debug.write("YOU ARE IN NOR");
+				datapointer.selectChild();
+				do{
+					if(evaluateConditonal(datapointer) == true){
+						datapointer.selectParent();
+						return false;
+					}
+				}while(datapointer.selectNext());
+				return true;
+			}
+			
+			return true;
+			
+		</method>
+		<method name="isPrevTriggeredOrVisited" args="Xpath">
+			var XPathString = new String(Xpath);
+			//Debug.write("XPATH IN ISPREVTRIGGER: " + XPathString);
+			if(XPathString.indexOf("/ActivityModel/") != -1){
+				//This case is if the operand is an activity node.
+				for (var i = 0; i &lt; VisitedActivityNodeList.subnodes.length; i++)
+   				{	
+   					//Debug.write("YOU ARE CHECKING THIS NODE: " + VisitedActivityNodeList.subnodes[i]['nodeXpath']);
+					Debug.write("VS: " + Xpath);
+						
+					if(XPathString == VisitedActivityNodeList.subnodes[i]['nodeXpath']){
+						Debug.write("YOU FOUND THIS NODE IS ALREADY VISITED: " + VisitedActivityNodeList.subnodes[i]['nodeXpath']);
+						return true;
+					}
+   					
+   				}
+   				return false;
+			}
+			else{
+				//This case is if the operand is a VPDData element
+				for (var i = 0; i &lt; TriggeredVPDElementList.subnodes.length; i++)
+   				{	
+					 if(XPathString == TriggeredVPDElementList.subnodes[i]['nodeXpath']){
+					 	Debug.write("YOU FOUND THIS DATA ALREADY TRIGGERED: " + VisitedActivityNodeList.subnodes[i]['nodeXpath']);
+					 	return true;
+					 }
+   				}
+				return false;
+			}
+			
+			
+		</method>
+		<simplelayout axis="y" spacing="10"/>
+	</class>
+	
+	<class name="Links" extends="view">
+		<attribute name="ActivityNodeDatapointer" type="string"/>
+		<attribute name="probability" type="string" value="Off"/>
+			<handler name="oninit">
+				
+				var linkPointer = new LzDatapointer(this, {name: "linkDatapointer"});
+				xp = "ActivityModel:/ActivityModel/Links[1]/Link[1]";
+				linkPointer.setXPath(xp);
+				
+				if(this.probability != "On"){
+					Debug.write("LINKS CLASS NON-PROBA: " + this.ActivityNodeDatapointer);
+					//probablility is off...display all the links.
+					do {
+						linkPointer.selectChild();
+						var nodeText = new String(linkPointer.getNodeText());
+						if(nodeText.indexOf("'" + this.ActivityNodeDatapointer + "'", 55) != -1){
+							linkPointer.selectNext();
+							var activityNodeBXpath = linkPointer.getNodeText();
+							linkPointer.selectParent();
+							//Create New Link Here
+							//Debug.write("Node Text: " +  nodeText);
+							var newLink = new lz.Link(this, {NodeXpath: activityNodeBXpath, label: linkPointer.getNodeAttribute("label")} );
+						}
+						else{
+							linkPointer.selectParent();
+						}
+					}
+					while(linkPointer.selectNext())
+				}
+				else{
+					//probability of on...display only one link at random.
+					Debug.write("LINKS CLASS PROBABILITY: " + this.ActivityNodeDatapointer);
+				
+					var currentProb = new Number(0);;
+					var i = 0;
+					var arrayXPath = [];
+					var arrayLabel = [];
+					var arrayProb = [];
+							
+					do {
+						linkPointer.selectChild();
+						var nodeText = new String(linkPointer.getNodeText());
+						if(nodeText.indexOf("'" + this.ActivityNodeDatapointer + "'", 55) != -1){
+							linkPointer.selectNext();
+							arrayXPath[i] = linkPointer.getNodeText();
+							
+							if(linkPointer.selectNext()){
+								var weighting = new Number(linkPointer.getNodeText());
+								currentProb = currentProb + weighting;
+								arrayProb[i] = currentProb;
+								Debug.write("in WEIGHTING: " + currentProb);
+							}
+							
+							
+							linkPointer.selectParent();
+							arrayLabel[i] = linkPointer.getNodeAttribute("label");
+							//Create New Link Here
+							//Debug.write("Node Text: " +  nodeText);
+							i++;
+							}
+						else{
+							linkPointer.selectParent();
+						}
+					}
+					while(linkPointer.selectNext())
+					
+					var random = Math.random();
+					random = random * 100;
+					
+					Debug.write("random: " + random);
+					
+					for(var j = 0; j &lt; i; j++){
+						if(random &lt; arrayProb[j]){
+							var newLink = new lz.Link(this, {NodeXpath: arrayXPath[j] , label: arrayLabel[j] } );
+							break;
+						
+						}
+					}
+				}
+			</handler>
+			<simplelayout axis="x" spacing="5"/>
+	</class>
+	
+	<class name="Link" extends="button">
+		<attribute name="NodeXpath" type="string"/>
+		<attribute name="label" type="string" />
+		<handler name="oninit">
+			this.setAttribute("text", this.label);
+			//this.setClickable();
+		</handler>
+		<handler name="onclick">
+			ChartNew.clearChartNew();
+			ChartAlerts.clearAlerts();
+			
+			//if(PatientChart.hasNewTrigger == true){
+			//	var newBreak = new LzText(ChartCurrent, {text:"----------Above info is from: " + ActivityNodeView.CurrentNodeTitle + "-------------------"} );
+			//	PatientChart.hasNewTrigger = false;
+			//}
+			//MAKES PROBS WHEN DELETING FROM DELAYED AND LEFT OVER SEPARATORS.
+			//if(PatientChart.hasNewDelayed == true){
+			//	var newBreak = new LzText(ChartPending, {text:"----------Above info is from: " + ActivityNodeView.CurrentNodeTitle + "-------------------"} );
+			//	PatientChart.hasNewDelayed = false;
+			//}
+			
+			
+			ActivityNodeView.setAttribute('datapath',"ActivityModel:" + this.NodeXpath);
+			//Debug.write("you are in the click...");
+		</handler>
+	</class>
+
+	<class name="Rule" extends="node">
+		<attribute name="Relation" type="string" />
+		<attribute name="Value" type="number" />
+		<attribute name="RuleRedirect" type="string"  value=""/>
+		<attribute name="RuleMessage" type="string"  value =""/>
+		
+		<handler name="oninit">
+			//Debug.write("you are in the RULE: " + this.Relation);
+			//Debug.write("you are in the RULE: " + this.Value);
+			//Debug.write("you are in the RULE: " + this.RuleRedirect);
+			//Debug.write("you are in the RULE: " + this.RuleMessage);
+			
+		</handler>
+	</class>
+
+	<class name="Counter" extends="view">
+		<attribute name="CounterValue" type="number" />
+		<attribute name="CounterLabel" type="string" />
+		<attribute name="CounterUnitsSuffix" type="string" value=""/>
+		<attribute name="CounterUnitsPrefix" type="string" value=""/>
+		<attribute name="isVisible" type="boolean" value="true"/> 
+		<text name="CounterText"/>
+		<event name="onSetCounterValue"/>
+		<handler name="ondata">
+			var rulePointer = new LzDatapointer(this, {name: "Datapointer"});
+			rulePointer.setFromPointer(this.datapath.dupePointer());
+			//Debug.write("isVisisble:" + this.isVisible);
+			this.isVisible = rulePointer.getNodeAttribute("isVisible");
+			rulePointer.selectChild();
+			do{
+					//Debug.write("you are in COUNTER: " );
+					if(rulePointer.getNodeName() == "CounterLabel"){
+						this.CounterLabel = rulePointer.getNodeText();		
+					}
+					if(rulePointer.getNodeName() == "CounterUnitsSuffix"){
+						this.CounterUnitsSuffix = rulePointer.getNodeText();
+					}
+					if(rulePointer.getNodeName() == "CounterUnitsPrefix"){
+						this.CounterUnitsPrefix = rulePointer.getNodeText();
+					}
+					if(rulePointer.getNodeName() == "CounterInitValue"){
+						this.CounterValue = rulePointer.getNodeText();
+					}
+					if(rulePointer.getNodeName() == "CounterRules"){
+						rulePointer.selectChild();
+						var RuleCount = 0;
+						var RuleRedirect = "";
+						var RuleMessage ="";
+						do{
+							rulePointer.selectChild();
+							do{
+								if(rulePointer.getNodeName() == "Relation"){
+									var Relation = rulePointer.getNodeText();
+								}
+								if(rulePointer.getNodeName() == "Value"){
+									var Value = rulePointer.getNodeText();
+								}
+								if(rulePointer.getNodeName() == "RuleRedirect"){
+									RuleRedirect = rulePointer.getNodeText();
+								}
+								if(rulePointer.getNodeName() == "RuleMessage"){
+									RuleMessage = rulePointer.getNodeText();
+								}
+							}
+							while (rulePointer.selectNext())
+							rulePointer.selectParent();
+							var newRule = new lz.Rule(this, {name: "Rule" + RuleCount, Relation: Relation, Value: Value, RuleRedirect : RuleRedirect, RuleMessage: RuleMessage });
+							RuleCount++;
+							RuleRedirect = "";
+							RuleMessage = "";
+							//Debug.write("YOU ADDED RULE NODE!!!" + newRule.getAttribute("name"));
+						}
+						while (rulePointer.selectNext())
+						rulePointer.selectParent();
+					}
+					
+					
+			}	
+			while (rulePointer.selectNext())
+			
+			//Debug.write("isVisible2222:" + this.isVisible);
+			if(this.isVisible == "true"){
+				this.CounterText.setAttribute('text',this.CounterLabel + ": " + this.CounterUnitsPrefix + this.CounterValue + this.CounterUnitsSuffix);
+			}
+		</handler>
+		<method name="UpdateCounterValue" args="counterOperator, counterRuleValue">
+			//Debug.write("UPDATE COUNTER VALUE METHOD!!!: " + counterOperator + " +++ " + counterRuleValue );
+			var newValue = new Number(0);
+			var updateValue = new Number(counterRuleValue);
+			if(counterOperator == "+"){
+				newValue = this.CounterValue + updateValue;
+			}
+			if(counterOperator == "-"){
+				newValue = this.CounterValue - updateValue;
+			}
+			if(counterOperator == "="){
+				newValue = updateValue;	
+			}
+			
+			this.CounterValue = newValue;
+			var learnerWasRedirected = onCounterValue();
+			
+			if (this.isVisible == "true"){
+				this.CounterText.setAttribute('text',this.CounterLabel + ": " + this.CounterUnitsPrefix + this.CounterValue + this.CounterUnitsSuffix);
+				//Debug.write("NEW COUNTER VALUE:" + this.CounterValue);
+			}
+			
+			return learnerWasRedirected;
+		</method>
+		<method name="onCounterValue">
+			var redirected = false;
+			for (var i = 0; i &lt; this.subnodes.length; i++)
+   			{
+   				var str = new String((this.subnodes[i])['name']);
+   				if( str.indexOf("Rule") != -1 &amp;&amp; str != null){
+   					
+   					//Debug.write("Relation: " + this.subnodes[i].getAttribute("Relation"));
+   					//Debug.write("Value: " + this.subnodes[i].getAttribute("Value"));
+   					//Debug.write("RuleRedirect: " + this.subnodes[i].getAttribute("RuleRedirect"));
+   					//Debug.write("RuleMessage: " + this.subnodes[i].getAttribute("RuleMessage"));
+   					
+   					var ruleTripped = false;
+   					
+   					if(this.subnodes[i]['Relation'] == "eq"){
+   						if(this.CounterValue == this.subnodes[i]['Value']){
+   								ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "neq"){
+   						if(this.CounterValue != this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "leq"){
+   						if(this.CounterValue &lt;= this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "lt"){
+   						if(this.CounterValue &lt; this.subnodes[i]['Value']){
+   							//Debug.write("CounterValue: " + this.CounterValue);
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "geq"){
+   						if(this.CounterValue &gt;= this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "gt"){
+   						if(this.CounterValue &gt; this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					//Debug.write("RULETRIPPED: " + ruleTripped);
+   					if(ruleTripped == true){
+   						if(this.subnodes[i]['RuleMessage'] != ""){
+   							//Debug.write("SETTING OF ALERT" + this.subnodes[i].getAttribute("RuleMessage"));
+   							ChartAlerts.addNewAlert(this.subnodes[i]['RuleMessage']);
+   						}
+   						if(this.subnodes[i]['RuleRedirect'] != ""){
+   							ActivityNodeView.setAttribute('datapath',"ActivityModel:" + this.subnodes[i]['RuleRedirect']);
+   							redirected = true;
+   						}
+   					}
+   				}
+   			}
+			return redirected;
+		</method>
+	</class>
+
+	<class name="Counters">
+		<handler name="ondata">
+			var counterPointer = new LzDatapointer(this, {name: "CounterDatapointer"});
+			counterPointer.setFromPointer(this.datapath.dupePointer());
+			counterPointer.selectChild();
+			do{
+					var newCounter = new lz.Counter(this, {counterID: counterPointer.getNodeAttribute("id")});
+					newCounter.setAttribute('datapath',"ActivityModel:/ActivityModel/Properties/Counters/Counter[@id ='" + counterPointer.getNodeAttribute("id") + "']");
+					//Debug.write("ActivityModel:/ActivityModel/Properties/Counters/Counter[@id ='" + counterPointer.getNodeAttribute("id") + "']");
+			}	
+			while (counterPointer.selectNext())
+			//Debug.write("Counterzzzzzzz222!!!: " +  counterPointer.xpathQuery(counterPointer));
+		</handler>
+		<simplelayout axis="y" spacing="2"/>
+	</class>
+	
+	<class name="NodeTimer" extends="view">
+		<attribute name="TimerDeltaSeconds" type="number" value="0"/> 
+		<attribute name="TimerDirection" type="string" value="down"/>
+		<attribute name="isVisible" type="boolean" value="true"/> 
+		<attribute name="TimerString" type="string" value="Global" />
+		<handler name="oninit">
+			//Debug.write("THIS IS IN TIMER! ONINIT ONINIT ONINIT ONINIT");
+		</handler>
+		<handler name="ondata">
+			//Debug.write("THIS IS IN TIMER!!#$@#%#@#$#@: ");
+			var TimerPointer = new LzDatapointer(this, {name: "TimerDatapointer"});
+			TimerPointer.setFromPointer(this.datapath.dupePointer());
+			//TimerPointer.selectChild();
+			
+			if(TimerPointer.getNodeAttribute("isVisible") == "true"){
+				this.isVisible =  true;
+				var TimerView = new LzText(this, {name: "timerText"});
+				
+			}
+			TimerPointer.selectChild();
+			this.TimerDeltaSeconds = TimerPointer.getNodeText();
+			if(this.isVisible ==  true){
+				TimerView.setAttribute('text',this.TimerString + this.TimerDeltaSeconds);
+			}
+			TimerPointer.selectNext();
+			this.TimerDirection = TimerPointer.getNodeText();
+			
+			if(TimerPointer.selectNext()){
+			
+				TimerPointer.selectChild();
+				var RuleCount = 0;
+				var RuleRedirect = "";
+				var RuleMessage ="";
+				do{
+					TimerPointer.selectChild();
+					do{
+						if(TimerPointer.getNodeName() == "Relation"){
+							var Relation = TimerPointer.getNodeText();
+						}
+						if(TimerPointer.getNodeName() == "Value"){
+							var Value = TimerPointer.getNodeText();
+						}
+						if(TimerPointer.getNodeName() == "RuleRedirect"){
+							RuleRedirect = TimerPointer.getNodeText();
+						}
+						if(TimerPointer.getNodeName() == "RuleMessage"){
+							RuleMessage = TimerPointer.getNodeText();
+						}
+					}
+					while (TimerPointer.selectNext())
+					TimerPointer.selectParent();
+					var newRule = new lz.Rule(this, {name: "Rule" + RuleCount, Relation: Relation, Value: Value, RuleRedirect : RuleRedirect, RuleMessage: RuleMessage });
+					RuleCount++;
+					RuleRedirect = "";
+					RuleMessage = "";
+					//Debug.write("YOU ADDED TIMER RULE NODE!!!" + newRule.getAttribute("name"));
+				}
+				while (TimerPointer.selectNext())
+			}
+			this.timerTicker();
+		</handler>
+		<method name="timerTicker" args="ignore">
+			
+			
+			
+			if(this.TimerDeltaSeconds &gt; 0){
+				if(typeof this.del == "undefined" ) { 
+             	this.del = new LzDelegate( this, "timerTicker");
+             	 Debug.write(typeof(lz.Timer.addTimer));
+              	 lz.Timer.addTimer( this.del, 1000 );
+            	} else {
+             	   lz.Timer.resetTimer( this.del, 1000 );
+             	  
+             	   	if(this.TimerDirection == "down"){
+						this.TimerDeltaSeconds--;
+				 	}
+					else{ //TimerDirection is up
+						this.TimerDeltaSeconds++;
+					}
+					
+					if(this.isVisible == true){
+						timerText.setAttribute('text',this.TimerString + this.TimerDeltaSeconds);
+					}
+			
+            	}
+			}
+			
+			this.checkRules();
+		</method>
+		<method name="checkRules">
+			for (var i = 0; i &lt; this.subnodes.length; i++)
+   			{
+   				var str = new String(this.subnodes[i]['name']);
+   				if( str.indexOf("Rule") != -1 &amp;&amp; str != null){
+   					
+   					//Debug.write("Relation: " + this.subnodes[i].getAttribute("Relation"));
+   					//Debug.write("Value: " + this.subnodes[i].getAttribute("Value"));
+   					//Debug.write("RuleRedirect: " + this.subnodes[i].getAttribute("RuleRedirect"));
+   					//Debug.write("RuleMessage: " + this.subnodes[i].getAttribute("RuleMessage"));
+   					
+   					var ruleTripped = false;
+   					
+   					if(this.subnodes[i]['Relation'] == "eq"){
+   						if(this.TimerDeltaSeconds == this.subnodes[i]['Value']){
+   							//Debug.write("CounterValue: " + this.TimerDeltaSeconds);
+   								ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "neq"){
+   						if(this.TimerDeltaSeconds != this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "leq"){
+   						if(this.TimerDeltaSeconds &lt;= this.subnodes[i]['Value']){
+   							//Debug.write("CounterValue: " + this.TimerDeltaSeconds);
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "lt"){
+   						if(this.TimerDeltaSeconds &lt; this.subnodes[i]['Value']){	
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "geq"){
+   						if(this.TimerDeltaSeconds &gt;= this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					if(this.subnodes[i]['Relation'] == "gt"){
+   						if(this.TimerDeltaSeconds &gt; this.subnodes[i]['Value']){
+   							ruleTripped = true;
+   						}
+   					}
+   					//Debug.write("RULETRIPPED: " + ruleTripped);
+   					if(ruleTripped == true){
+   						if(this.subnodes[i]['RuleMessage'] != ""){
+   							//Debug.write("SETTING OF ALERT" + this.subnodes[i].getAttribute("RuleMessage"));
+   							ChartAlerts.addNewAlert(this.subnodes[i]['RuleMessage']);
+   						}
+   						if(this.subnodes[i]['RuleRedirect'] != ""){
+   							
+   							//Debug.write("You are REDIRECTING!" + this.subnodes[i].getAttribute("RuleRedirect"));
+   							ActivityNodeView.setAttribute('datapath',"ActivityModel:" + this.subnodes[i]['RuleRedirect']);
+   						}
+   						this.destroy();
+   					}
+   				}
+   			}
+		</method>
+	</class>
+	
+	<class name="NavTree" extends="tree">
+		<attribute name="nodeXPath" value="" type="string"></attribute>
+		<handler name="onclick">
+			//super.onclick();
+			
+			Debug.write("IN NAV TREEEEEEEEEEEEE: " + nodeXPath);
+			ChartNew.clearChartNew();
+			ChartAlerts.clearAlerts();
+			ActivityNodeView.setAttribute('datapath',this.nodeXPath);
+			
+		</handler>
+			
+	</class>
+	
+	<class name="navMenu" extends="window" allowdrag="false" resizable="true" closeable="true" width="150" height="350">
+		<view name="clipTreeView" clip="true" height="350" width="150">
+			<view name="treeView">
+				<simplelayout axis="y" spacing="2"/>
+			</view>
+			
+			<vscrollbar/>	
+			<hscrollbar/> 
+		</view>
+
+		<handler name="ondata">
+			var nodeSectionPath ="ActivityModel:/ActivityModel/ActivityNodes/NodeSection[1]/";
+			var currentNodeSection = 1;
+			var MenuPointer = new LzDatapointer(this, {name: "menuPointer"});
+			MenuPointer.setXPath(nodeSectionPath);
+			//Iterate through all Node Sections
+			
+			var NavPointer = new LzDatapointer(this, {name: "navPointer"});
+			var ActNodPointer = new LzDatapointer(this, {name: "actNodPointer"});
+			do{
+				//Debug.write("NODE SECTION LABEL: " + MenuPointer.getNodeAttribute('label'));
+				var newTreeNode = new lz.tree(this.clipTreeView.treeView, {name: "treehead" + currentNodeSection, text: MenuPointer.getNodeAttribute('label'), open: true});
+				var currentActivityNode = 1;
+				var hasNavGlobalNode = false;
+				//var parentSection2 = "this.treehead" + currentNodeSection;
+				//var newTreeNode = new simplelayout(eval(parentSection2), {axis: "y"});	
+				//Iterate through all Activity Nodes in each Section.
+				do{
+					NavPointer.setXPath("ActivityModel:/ActivityModel/ActivityNodes/NodeSection[" + currentNodeSection + "]/ActivityNode[" + currentActivityNode + "]/Rules/NavigateGlobal");
+					ActNodPointer.setXPath("ActivityModel:/ActivityModel/ActivityNodes/NodeSection[" + currentNodeSection + "]/ActivityNode[" + currentActivityNode + "]");
+					
+					//var parentSection = "this.treehead" + currentNodeSection;
+					//var newTreeNode = new tree(eval(parentSection), {text: NavPointer.getNodeAttribute('label')});	
+					//Debug.write("Curr XPATH?: " + "ActivityModel:/ActivityModel/ActivityNodes/NodeSection[" + currentNodeSection + "]/ActivityNode[" + currentActivityNode + "]/Rules/NavigateGlobal");
+					//Debug.write("IS NAV ON?: " + NavPointer.getNodeText());
+						
+					if(NavPointer.isValid() &amp;&amp; NavPointer.getNodeText() == "On"){
+						var labelText = "" + ActNodPointer.getNodeAttribute('label');
+						var newTreeLeaf = new lz.NavTree(newTreeNode, {text: labelText, isleaf: "true", nodeXPath: "ActivityModel:/ActivityModel/ActivityNodes/NodeSection[" + currentNodeSection + "]/ActivityNode[" + currentActivityNode + "]"});
+						hasNavGlobalNode = true;
+					}
+					
+					currentActivityNode++;
+				}while(ActNodPointer.selectNext())
+				
+				if(!hasNavGlobalNode){
+					newTreeNode.destroy();
+				}
+				currentNodeSection++;
+			}while(MenuPointer.selectNext())
+			
+		</handler>
+		<handler name="oninit">
+			this.close();
+			var width_del = new LzDelegate(this, "updateTreePos");
+  			width_del.register(this, "onheight");
+  			width_del = new LzDelegate(this, "updateTreePos");
+  			width_del.register(this, "onwidth");
+		</handler>
+		<handler name="onvisible">
+			if(this['visible'] == false &amp;&amp; !(typeof(NavButton.setAttribute) == 'undefined')){
+    			NavButton.setAttribute("NavToggle", "0");
+    		}
+		</handler>
+		<method name="updateTreePos" args="ignore">
+	        	this.clipTreeView.setAttribute('height', this.height- 45);
+	        	this.clipTreeView.setAttribute('width', this.width - 19);
+	    </method> 
+		<simplelayout axis="y" spacing="2"/>
+
+	</class>
+	
+	<class name="ActivityModelClass" extends="view" valign="top">
+		<alert/>
+		<handler name="oninit">
+			var newCounters = new lz.Counters(this.container.mainView, {name: "CountersView", x:"700", yoffset:"0"});
+			newCounters.setAttribute('datapath',"ActivityModel:/ActivityModel/Properties/Counters");
+			var newTimer = new lz.NodeTimer(this.container.mainView, {name: "TimerView", x:"550", TimerString:"Global Timer: "});
+			newTimer.setAttribute('datapath',"ActivityModel:/ActivityModel/Properties/Timer");
+			ActivityNodeView = new lz.ActivityNode(this.container.mainView, { x:"20"});
+			ActivityNodeView.setAttribute('datapath',"ActivityModel:/ActivityModel/ActivityNodes/NodeSection[1]/ActivityNode[1]");
+			
+			
+			Debug.write("HERE IS ACTIVITY NODE VIEW ACTivity Node: " + ActivityNodeView);
+
+			
+			var width_del = new LzDelegate(this, "customSetWidth");
+  			width_del.register(ActivityNodeView, "onwidth");
+  			var width_del = new LzDelegate(this, "customSetWidth");
+  			width_del.register(ActivityNavMenu, "onwidth");
+  			var width_del = new LzDelegate(this, "customSetWidth");
+  			width_del.register(ActivityNavMenu, "onvisible");
+  			
+  			
+  			this.setAttribute('width', ActivityNodeView['width'] + this.container.navMenuView['width'] + 25 );
+			
+		</handler>
+		<view name="container" id="rad">
+			<view name="navMenuView">
+				<navMenu id="ActivityNavMenu" datapath="ActivityModel:/ActivityModel/ActivityNodes/NodeSection[1]">
+				</navMenu>
+
+			</view>
+			
+			<view name="mainView" id="theMainView">
+			</view>
+			<simplelayout axis="x" spacing="-10"/>
+		</view>
+		
+		<method name="customSetWidth" args="ignore">
+			//THis is here so that the horizontal scroll works when the nav or VPDText or chart are expanded.
+			var theWidth = ActivityNodeView['width'] + ActivityNavMenu['width'] +  25
+			if(theWidth &gt;= 950)
+				this.setAttribute('width', ActivityNodeView['width'] + this.container.navMenuView['width'] + 35 );
+			else{
+				this.setAttribute('width', 850 + this.container.navMenuView['width']);
+			}
+		</method>
+	</class>
+</library>
