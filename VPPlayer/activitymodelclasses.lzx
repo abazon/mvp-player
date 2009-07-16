@@ -801,7 +801,8 @@
 			var newValue = new Number(0);
 			var updateValue = new Number(counterRuleValue);
 			if(counterOperator == "+"){
-				newValue = this.CounterValue + updateValue;
+				//-0 is necessary to make Lazslo think we are dealing with number and not strings (or else will concatenate)
+				newValue = this.CounterValue - 0 + updateValue;
 			}
 			if(counterOperator == "-"){
 				newValue = this.CounterValue - updateValue;
@@ -810,7 +811,7 @@
 				newValue = updateValue;	
 			}
 			
-			this.CounterValue = newValue;
+			this.CounterValue = newValue - 0;
 			var learnerWasRedirected = onCounterValue();
 			
 			if (this.isVisible == "true"){
