@@ -356,8 +356,12 @@
 				//Debug.write("SUB NODE: " + this.getUID());
 				if(typeof(mainDataView) != 'undefined')
 					mainDataView.destroy();
-				if(typeof(TimerViewLocal) != 'undefined')	
-					TimerViewLocal.destroy();
+				Debug.write("xxxxxxxxYou are about to destory: " + typeof(this.parent.TimerViewLocal) );	
+				if(typeof(this.parent.TimerViewLocal) != 'undefined'){	
+					this.parent.TimerViewLocal.destroy();
+					Debug.write("Destroying Local Timer view");
+				}
+					
 				//Debug.write("MEDIA RESOURCE: " + this.datapath.getNodeText());
 				mainDataView = new lz.DAMNode(this, {});
 				mainDataView.setAttribute('datapath',"DataAvailabilityModel:" + this.datapath.getNodeText());
@@ -960,10 +964,8 @@
 			}
 			this.timerTicker();
 		</handler>
-		<method name="timerTicker" args="ignore">
-			
-			
-			
+	
+		<method name="timerTicker" args="ignore">	
 			if(this.TimerDeltaSeconds &gt; 0){
 				if(typeof this.del == "undefined" ) { 
              	this.del = new LzDelegate( this, "timerTicker");
