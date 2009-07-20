@@ -1,4 +1,4 @@
-#This page tells you how to run the MVP Player written in OpenLazslo
+#This page tells you how to run the MVP Player written in Openlazslo
 
 
 
